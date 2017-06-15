@@ -55,6 +55,7 @@ public final class SsmApi {
             }
             final DescribeInstanceInformationResult result = client.describeInstanceInformation(r.withFilters(filters).withNextToken(page));
             response.setInstanceInformation(result.getInstanceInformationList());
+            response.setNextPage(result.getNextToken());
         });
     }
 }
