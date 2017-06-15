@@ -355,11 +355,11 @@
                         <param>com.cloudaware.cloudmine.amazon.ses.SesApi</param>
                         <param>com.cloudaware.cloudmine.amazon.sns.SnsApi</param>
                         <param>com.cloudaware.cloudmine.amazon.sqs.SqsApi</param>
+                        <param>com.cloudaware.cloudmine.amazon.ssm.SsmApi</param>
                         <param>com.cloudaware.cloudmine.amazon.storagegateway.StorageGatewayApi</param>
                         <param>com.cloudaware.cloudmine.amazon.sts.StsApi</param>
                         <param>com.cloudaware.cloudmine.amazon.support.SupportApi</param>
                         <param>com.cloudaware.cloudmine.amazon.workspaces.WorkspacesApi</param>
-                        <param>com.cloudaware.cloudmine.amazon.ssm.SsmApi</param>
                     </apis>
                 </configuration>
                 <executions>
