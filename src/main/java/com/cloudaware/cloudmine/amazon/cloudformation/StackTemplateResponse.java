@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.cloudformation;
 
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -10,17 +9,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
  */
 public final class StackTemplateResponse extends AmazonResponse {
     private String templateBody;
-
-    public StackTemplateResponse() {
-    }
-
-    public StackTemplateResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public StackTemplateResponse(final String templateBody) {
-        this.templateBody = templateBody;
-    }
 
     public String getTemplateBody() {
         return templateBody;

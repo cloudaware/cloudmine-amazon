@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.iam;
 
 import com.amazonaws.services.identitymanagement.model.SigningCertificate;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class SigningCertificatesResponse extends AmazonResponse {
     private List<SigningCertificate> signingCertificates;
-
-    public SigningCertificatesResponse() {
-    }
-
-    public SigningCertificatesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public SigningCertificatesResponse(final List<SigningCertificate> signingCertificates, final String nextPage) {
-        super(nextPage);
-        this.signingCertificates = signingCertificates;
-    }
 
     public List<SigningCertificate> getSigningCertificates() {
         return signingCertificates;

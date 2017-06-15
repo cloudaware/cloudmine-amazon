@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.cloudtrail;
 
 import com.amazonaws.services.cloudtrail.model.Trail;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class TrailsResponse extends AmazonResponse {
     private List<Trail> trails;
-
-    public TrailsResponse() {
-    }
-
-    public TrailsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public TrailsResponse(final List<Trail> trails) {
-        this.trails = trails;
-    }
 
     public List<Trail> getTrails() {
         return trails;

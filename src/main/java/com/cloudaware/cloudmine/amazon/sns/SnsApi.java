@@ -1,17 +1,15 @@
 package com.cloudaware.cloudmine.amazon.sns;
 
-import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.model.GetSubscriptionAttributesRequest;
+import com.amazonaws.services.sns.model.GetSubscriptionAttributesResult;
 import com.amazonaws.services.sns.model.GetTopicAttributesRequest;
+import com.amazonaws.services.sns.model.GetTopicAttributesResult;
 import com.amazonaws.services.sns.model.ListSubscriptionsRequest;
 import com.amazonaws.services.sns.model.ListSubscriptionsResult;
 import com.amazonaws.services.sns.model.ListTopicsRequest;
 import com.amazonaws.services.sns.model.ListTopicsResult;
 import com.amazonaws.services.sns.model.PublishResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -19,8 +17,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
-
-import java.util.Map;
 
 /**
  * User: urmuzov
@@ -54,15 +50,11 @@ public final class SnsApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonSNS> clientWrapper = new AmazonClientHelper(credentials).getSns(region)) {
-            final ListTopicsResult response = clientWrapper.getClient().listTopics(
-                    new ListTopicsRequest()
-                            .withNextToken(page)
-            );
-            return new TopicsResponse(response.getTopics(), response.getNextToken());
-        } catch (Throwable t) {
-            return new TopicsResponse(AmazonResponse.parse(t));
-        }
+        return SnsCaller.get(ListTopicsRequest.class, TopicsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListTopicsResult result = client.listTopics(request.withNextToken(page));
+            response.setTopics(result.getTopics());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -75,12 +67,10 @@ public final class SnsApi {
             @Named("region") final String region,
             @Named("topicArn") final String topicArn
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonSNS> clientWrapper = new AmazonClientHelper(credentials).getSns(region)) {
-            final Map<String, String> out = clientWrapper.getClient().getTopicAttributes(new GetTopicAttributesRequest(topicArn)).getAttributes();
-            return new AttributesResponse(out);
-        } catch (Throwable t) {
-            return new AttributesResponse(AmazonResponse.parse(t));
-        }
+        return SnsCaller.get(GetTopicAttributesRequest.class, AttributesResponse.class, credentials, region).execute((client, request, response) -> {
+            final GetTopicAttributesResult result = client.getTopicAttributes(request.withTopicArn(topicArn));
+            response.setAttributes(result.getAttributes());
+        });
     }
 
     @ApiMethod(
@@ -94,9 +84,9 @@ public final class SnsApi {
             @Named("topicArn") final String topicArn,
             final PublishRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonSNS> clientWrapper = new AmazonClientHelper(credentials).getSns(region)) {
-            final PublishResult result = clientWrapper.getClient().publish(
-                    new com.amazonaws.services.sns.model.PublishRequest()
+        return SnsCaller.get(com.amazonaws.services.sns.model.PublishRequest.class, PublishResponse.class, credentials, region).execute((client, r, response) -> {
+            final PublishResult result = client.publish(
+                    r
                             .withTopicArn(topicArn)
                             .withTargetArn(request.getTargetArn())
                             .withPhoneNumber(request.getPhoneNumber())
@@ -105,10 +95,8 @@ public final class SnsApi {
                             .withMessageStructure(request.getMessageStructure())
                             .withMessageAttributes(request.getMessageAttributes())
             );
-            return new PublishResponse(result.getMessageId());
-        } catch (Throwable t) {
-            return new PublishResponse(AmazonResponse.parse(t));
-        }
+            response.setMessageId(result.getMessageId());
+        });
     }
 
     @ApiMethod(
@@ -121,15 +109,11 @@ public final class SnsApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonSNS> clientWrapper = new AmazonClientHelper(credentials).getSns(region)) {
-            final ListSubscriptionsResult response = clientWrapper.getClient().listSubscriptions(
-                    new ListSubscriptionsRequest()
-                            .withNextToken(page)
-            );
-            return new SubscriptionsResponse(response.getSubscriptions(), response.getNextToken());
-        } catch (Throwable t) {
-            return new SubscriptionsResponse(AmazonResponse.parse(t));
-        }
+        return SnsCaller.get(ListSubscriptionsRequest.class, SubscriptionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListSubscriptionsResult result = client.listSubscriptions(request.withNextToken(page));
+            response.setSubscriptions(result.getSubscriptions());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -142,11 +126,9 @@ public final class SnsApi {
             @Named("region") final String region,
             @Named("subscriptionArn") final String subscriptionArn
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonSNS> clientWrapper = new AmazonClientHelper(credentials).getSns(region)) {
-            final Map<String, String> out = clientWrapper.getClient().getSubscriptionAttributes(new GetSubscriptionAttributesRequest(subscriptionArn)).getAttributes();
-            return new AttributesResponse(out);
-        } catch (Throwable t) {
-            return new AttributesResponse(AmazonResponse.parse(t));
-        }
+        return SnsCaller.get(GetSubscriptionAttributesRequest.class, AttributesResponse.class, credentials, region).execute((client, request, response) -> {
+            final GetSubscriptionAttributesResult result = client.getSubscriptionAttributes(request.withSubscriptionArn(subscriptionArn));
+            response.setAttributes(result.getAttributes());
+        });
     }
 }

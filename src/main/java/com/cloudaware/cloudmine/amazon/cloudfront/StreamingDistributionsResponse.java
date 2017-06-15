@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.cloudfront;
 
 import com.amazonaws.services.cloudfront.model.StreamingDistributionSummary;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class StreamingDistributionsResponse extends AmazonResponse {
     private List<StreamingDistributionSummary> streamingDistributions;
-
-    public StreamingDistributionsResponse() {
-    }
-
-    public StreamingDistributionsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public StreamingDistributionsResponse(final List<StreamingDistributionSummary> streamingDistributions, final String nextPage) {
-        super(nextPage);
-        this.streamingDistributions = streamingDistributions;
-    }
 
     public List<StreamingDistributionSummary> getStreamingDistributions() {
         return streamingDistributions;

@@ -14,9 +14,6 @@ import java.util.List;
 public final class BucketsResponse extends AmazonResponse {
     private List<Bucket> buckets;
 
-    public BucketsResponse() {
-    }
-
     public BucketsResponse(final AmazonException exception) {
         super(exception);
     }

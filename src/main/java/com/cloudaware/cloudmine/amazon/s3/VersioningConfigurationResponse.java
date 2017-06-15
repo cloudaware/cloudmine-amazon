@@ -12,9 +12,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
 public final class VersioningConfigurationResponse extends AmazonResponse {
     private BucketVersioningConfiguration versioningConfiguration;
 
-    public VersioningConfigurationResponse() {
-    }
-
     public VersioningConfigurationResponse(final AmazonException exception) {
         super(exception);
     }

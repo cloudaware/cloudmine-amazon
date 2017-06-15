@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.elb;
 
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerAttributes;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -11,17 +10,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
  */
 public final class LoadBalancerAttributesResponse extends AmazonResponse {
     private LoadBalancerAttributes attributes;
-
-    public LoadBalancerAttributesResponse() {
-    }
-
-    public LoadBalancerAttributesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public LoadBalancerAttributesResponse(final LoadBalancerAttributes attributes) {
-        this.attributes = attributes;
-    }
 
     public LoadBalancerAttributes getAttributes() {
         return attributes;

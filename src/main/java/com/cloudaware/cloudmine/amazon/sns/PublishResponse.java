@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.sns;
 
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -10,17 +9,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
  */
 public final class PublishResponse extends AmazonResponse {
     private String messageId;
-
-    public PublishResponse() {
-    }
-
-    public PublishResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public PublishResponse(final String messageId) {
-        this.messageId = messageId;
-    }
 
     public String getMessageId() {
         return messageId;

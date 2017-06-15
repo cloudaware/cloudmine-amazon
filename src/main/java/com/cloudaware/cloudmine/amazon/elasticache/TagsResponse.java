@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.elasticache;
 
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.Map;
@@ -12,17 +11,6 @@ import java.util.Map;
  */
 public final class TagsResponse extends AmazonResponse {
     private Map<String, String> tags;
-
-    public TagsResponse() {
-    }
-
-    public TagsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public TagsResponse(final Map<String, String> tags) {
-        this.tags = tags;
-    }
 
     public Map<String, String> getTags() {
         return tags;

@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.elasticbeanstalk;
 
 import com.amazonaws.services.elasticbeanstalk.model.EventDescription;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class EventsResponse extends AmazonResponse {
     private List<EventDescription> events;
-
-    public EventsResponse() {
-    }
-
-    public EventsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public EventsResponse(final List<EventDescription> events, final String nextPage) {
-        super(nextPage);
-        this.events = events;
-    }
 
     public List<EventDescription> getEvents() {
         return events;

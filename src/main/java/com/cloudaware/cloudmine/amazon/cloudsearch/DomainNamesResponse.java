@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.cloudsearch;
 
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.Map;
@@ -12,17 +11,6 @@ import java.util.Map;
  */
 public final class DomainNamesResponse extends AmazonResponse {
     private Map<String, String> domainNames;
-
-    public DomainNamesResponse() {
-    }
-
-    public DomainNamesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public DomainNamesResponse(final Map<String, String> domainNames) {
-        this.domainNames = domainNames;
-    }
 
     public Map<String, String> getDomainNames() {
         return domainNames;

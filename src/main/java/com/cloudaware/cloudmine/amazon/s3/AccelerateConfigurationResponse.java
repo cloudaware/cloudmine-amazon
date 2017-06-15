@@ -12,9 +12,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
 public final class AccelerateConfigurationResponse extends AmazonResponse {
     private BucketAccelerateConfiguration accelerateConfiguration;
 
-    public AccelerateConfigurationResponse() {
-    }
-
     public AccelerateConfigurationResponse(final AmazonException exception) {
         super(exception);
     }

@@ -2,6 +2,7 @@ package com.cloudaware.cloudmine.amazon;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.AmazonWebServiceResult;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,8 @@ import java.net.SocketTimeoutException;
  * Date: 03.17.17
  * Time: 16:27
  */
-public class AmazonResponse {
+public class AmazonResponse<T extends AmazonWebServiceResult> {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AmazonResponse.class);
     private static final int HTTP_TEMPORARY_UNAVAILABLE = 503;
     private AmazonException exception;
@@ -30,7 +32,7 @@ public class AmazonResponse {
         this.exception = exception;
     }
 
-    public static AmazonException parse(final Throwable t) throws AmazonUnparsedException {
+    public static AmazonException parse(final Throwable t, final String action) throws AmazonUnparsedException {
         LOGGER.error("Caught exception during API call to AWS", t);
         if (t instanceof AmazonServiceException) {
             final AmazonServiceException ex = (AmazonServiceException) t;
@@ -53,7 +55,7 @@ public class AmazonResponse {
                     || "InvalidAccessKeyId".equals(errorCode)
                     || ("InvalidParameterValue".equals(errorCode) && errorMessage.startsWith("Access Denied")) // Strange exception from Beastalk which contains another exception in message
                     ) {
-                return new AmazonException(AmazonException.Category.NO_ACCESS, ex);
+                return new AmazonException(AmazonException.Category.NO_ACCESS, action, ex);
             }
             /**
              * Throttling-related exceptions
@@ -63,7 +65,7 @@ public class AmazonResponse {
                     || "ThrottlingException".equals(errorCode)
                     || "TooManyRequestsException".equals(errorCode)
                     || "RequestLimitExceeded".equals(errorCode)) {
-                return new AmazonException(AmazonException.Category.THROTTLING, ex);
+                return new AmazonException(AmazonException.Category.THROTTLING, action, ex);
             }
             /**
              * Exceptions related to service unavailability
@@ -81,7 +83,7 @@ public class AmazonResponse {
                     || ("UnsupportedOperation".equals(errorCode) && errorMessage.contains("Amazon Internet Services Private Limited (AISPL)"))
                     || "AWSOrganizationsNotInUseException".equals(errorCode)
                     ) {
-                return new AmazonException(AmazonException.Category.SERVICE_DISABLED, ex);
+                return new AmazonException(AmazonException.Category.SERVICE_DISABLED, action, ex);
             }
             /**
              * Exception that signals that specific object not found in AWS
@@ -114,7 +116,7 @@ public class AmazonResponse {
                     || "TrailNotFoundException".equals(errorCode)
                     || ("ValidationError".equals(errorCode) && errorMessage.startsWith("Stack with id") && errorMessage.contains("does not exist"))
                     ) {
-                return new AmazonException(AmazonException.Category.OBJECT_NOT_FOUND, ex);
+                return new AmazonException(AmazonException.Category.OBJECT_NOT_FOUND, action, ex);
             }
             /**
              * SlowDown multiplier: 1, Category: TEMPORARY_ERROR
@@ -130,23 +132,23 @@ public class AmazonResponse {
                     || "KMSInternalException".equals(errorCode)
                     || "HttpConnectionTimeoutException".equals(errorCode)
                     || (errorType == AmazonServiceException.ErrorType.Unknown && statusCode == HTTP_TEMPORARY_UNAVAILABLE)) {
-                return new AmazonException(AmazonException.Category.TEMPORARY_ERROR, ex);
+                return new AmazonException(AmazonException.Category.TEMPORARY_ERROR, action, ex);
             }
-            return new AmazonException(AmazonException.Category.UNKNOWN, ex);
+            return new AmazonException(AmazonException.Category.UNKNOWN, action, ex);
         } else if (t instanceof AmazonClientException) {
             final AmazonClientException ex = (AmazonClientException) t;
             final String message = ex.getMessage();
             if (message != null && message.contains("Unable to unmarshall response") && (message.contains("Read timed out") || message.contains("Connection reset"))) {
-                return new AmazonException(AmazonException.Category.TEMPORARY_ERROR, t.getClass().getName(), t.getMessage());
+                return new AmazonException(AmazonException.Category.TEMPORARY_ERROR, action, t.getClass().getName(), t.getMessage());
             }
             if (ex.getCause() != null && ex.getCause() instanceof ConnectTimeoutException
                     && ex.getCause().getCause() != null && ex.getCause().getCause() instanceof SocketTimeoutException) {
-                return new AmazonException(AmazonException.Category.TEMPORARY_ERROR, t.getClass().getName(), t.getMessage());
+                return new AmazonException(AmazonException.Category.TEMPORARY_ERROR, action, t.getClass().getName(), t.getMessage());
             }
             if (ex.getCause() != null && ex.getCause() instanceof org.apache.http.NoHttpResponseException) {
-                return new AmazonException(AmazonException.Category.TEMPORARY_ERROR, t.getClass().getName(), t.getMessage());
+                return new AmazonException(AmazonException.Category.TEMPORARY_ERROR, action, t.getClass().getName(), t.getMessage());
             }
-            return new AmazonException(AmazonException.Category.UNKNOWN, t.getClass().getName(), t.getMessage());
+            return new AmazonException(AmazonException.Category.UNKNOWN, action, t.getClass().getName(), t.getMessage());
         }
         throw new AmazonUnparsedException(t);
     }

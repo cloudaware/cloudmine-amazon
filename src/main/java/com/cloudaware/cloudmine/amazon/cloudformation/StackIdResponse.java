@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.cloudformation;
 
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -11,17 +10,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
 public final class StackIdResponse extends AmazonResponse {
 
     private String stackId;
-
-    public StackIdResponse() {
-    }
-
-    public StackIdResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public StackIdResponse(final String stackId) {
-        this.stackId = stackId;
-    }
 
     public String getStackId() {
         return stackId;

@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.directoryservice;
 
-import com.amazonaws.services.directory.AWSDirectoryService;
 import com.amazonaws.services.directory.model.DescribeConditionalForwardersRequest;
 import com.amazonaws.services.directory.model.DescribeConditionalForwardersResult;
 import com.amazonaws.services.directory.model.DescribeDirectoriesRequest;
@@ -21,10 +20,7 @@ import com.amazonaws.services.directory.model.ListSchemaExtensionsRequest;
 import com.amazonaws.services.directory.model.ListSchemaExtensionsResult;
 import com.amazonaws.services.directory.model.ListTagsForResourceRequest;
 import com.amazonaws.services.directory.model.ListTagsForResourceResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -64,17 +60,15 @@ public final class DirectoryServiceApi {
             @Named("directoryId") @Nullable final List<String> directoryIds,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSDirectoryService> clientWrapper = new AmazonClientHelper(credentials).getDirectoryService(region)) {
-            final DescribeDirectoriesResult result = clientWrapper.getClient()
-                    .describeDirectories(
-                            new DescribeDirectoriesRequest()
-                                    .withDirectoryIds(directoryIds)
-                                    .withNextToken(page)
-                    );
-            return new DirectoriesResponse(result.getDirectoryDescriptions(), result.getNextToken());
-        } catch (Throwable t) {
-            return new DirectoriesResponse(AmazonResponse.parse(t));
-        }
+        return DirectoryServiceCaller.get(DescribeDirectoriesRequest.class, DirectoriesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeDirectoriesResult result = client.describeDirectories(
+                    request
+                            .withDirectoryIds(directoryIds)
+                            .withNextToken(page)
+            );
+            response.setDirectories(result.getDirectoryDescriptions());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -88,17 +82,14 @@ public final class DirectoryServiceApi {
             @Named("directoryId") final String directoryId,
             @Named("remoteDomainName") @Nullable final List<String> remoteDomainNames
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSDirectoryService> clientWrapper = new AmazonClientHelper(credentials).getDirectoryService(region)) {
-            final DescribeConditionalForwardersResult result = clientWrapper.getClient()
-                    .describeConditionalForwarders(
-                            new DescribeConditionalForwardersRequest()
-                                    .withDirectoryId(directoryId)
-                                    .withRemoteDomainNames(remoteDomainNames)
-                    );
-            return new ConditionalForwardersResponse(result.getConditionalForwarders());
-        } catch (Throwable t) {
-            return new ConditionalForwardersResponse(AmazonResponse.parse(t));
-        }
+        return DirectoryServiceCaller.get(DescribeConditionalForwardersRequest.class, ConditionalForwardersResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeConditionalForwardersResult result = client.describeConditionalForwarders(
+                    request
+                            .withDirectoryId(directoryId)
+                            .withRemoteDomainNames(remoteDomainNames)
+            );
+            response.setConditionalForwarders(result.getConditionalForwarders());
+        });
     }
 
     @ApiMethod(
@@ -112,17 +103,14 @@ public final class DirectoryServiceApi {
             @Named("directoryId") final String directoryId,
             @Named("topicName") @Nullable final List<String> topicNames
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSDirectoryService> clientWrapper = new AmazonClientHelper(credentials).getDirectoryService(region)) {
-            final DescribeEventTopicsResult result = clientWrapper.getClient()
-                    .describeEventTopics(
-                            new DescribeEventTopicsRequest()
-                                    .withDirectoryId(directoryId)
-                                    .withTopicNames(topicNames)
-                    );
-            return new EventTopicsResponse(result.getEventTopics());
-        } catch (Throwable t) {
-            return new EventTopicsResponse(AmazonResponse.parse(t));
-        }
+        return DirectoryServiceCaller.get(DescribeEventTopicsRequest.class, EventTopicsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeEventTopicsResult result = client.describeEventTopics(
+                    request
+                            .withDirectoryId(directoryId)
+                            .withTopicNames(topicNames)
+            );
+            response.setEventTopics(result.getEventTopics());
+        });
     }
 
     @ApiMethod(
@@ -137,18 +125,16 @@ public final class DirectoryServiceApi {
             @Named("snapshotId") @Nullable final List<String> snapshotIds,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSDirectoryService> clientWrapper = new AmazonClientHelper(credentials).getDirectoryService(region)) {
-            final DescribeSnapshotsResult result = clientWrapper.getClient()
-                    .describeSnapshots(
-                            new DescribeSnapshotsRequest()
-                                    .withDirectoryId(directoryId)
-                                    .withSnapshotIds(snapshotIds)
-                                    .withNextToken(page)
-                    );
-            return new SnapshotsResponse(result.getSnapshots(), result.getNextToken());
-        } catch (Throwable t) {
-            return new SnapshotsResponse(AmazonResponse.parse(t));
-        }
+        return DirectoryServiceCaller.get(DescribeSnapshotsRequest.class, SnapshotsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeSnapshotsResult result = client.describeSnapshots(
+                    request
+                            .withDirectoryId(directoryId)
+                            .withSnapshotIds(snapshotIds)
+                            .withNextToken(page)
+            );
+            response.setSnapshots(result.getSnapshots());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -163,18 +149,16 @@ public final class DirectoryServiceApi {
             @Named("trustId") @Nullable final List<String> trustIds,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSDirectoryService> clientWrapper = new AmazonClientHelper(credentials).getDirectoryService(region)) {
-            final DescribeTrustsResult result = clientWrapper.getClient()
-                    .describeTrusts(
-                            new DescribeTrustsRequest()
-                                    .withDirectoryId(directoryId)
-                                    .withTrustIds(trustIds)
-                                    .withNextToken(page)
-                    );
-            return new TrustsResponse(result.getTrusts(), result.getNextToken());
-        } catch (Throwable t) {
-            return new TrustsResponse(AmazonResponse.parse(t));
-        }
+        return DirectoryServiceCaller.get(DescribeTrustsRequest.class, TrustsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeTrustsResult result = client.describeTrusts(
+                    request
+                            .withDirectoryId(directoryId)
+                            .withTrustIds(trustIds)
+                            .withNextToken(page)
+            );
+            response.setTrusts(result.getTrusts());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -186,15 +170,10 @@ public final class DirectoryServiceApi {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSDirectoryService> clientWrapper = new AmazonClientHelper(credentials).getDirectoryService(region)) {
-            final GetDirectoryLimitsResult result = clientWrapper.getClient()
-                    .getDirectoryLimits(
-                            new GetDirectoryLimitsRequest()
-                    );
-            return new DirectoryLimitsResponse(result.getDirectoryLimits());
-        } catch (Throwable t) {
-            return new DirectoryLimitsResponse(AmazonResponse.parse(t));
-        }
+        return DirectoryServiceCaller.get(GetDirectoryLimitsRequest.class, DirectoryLimitsResponse.class, credentials, region).execute((client, request, response) -> {
+            final GetDirectoryLimitsResult result = client.getDirectoryLimits(request);
+            response.setDirectoryLimits(result.getDirectoryLimits());
+        });
     }
 
     @ApiMethod(
@@ -207,16 +186,10 @@ public final class DirectoryServiceApi {
             @Named("region") final String region,
             @Named("directoryId") final String directoryId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSDirectoryService> clientWrapper = new AmazonClientHelper(credentials).getDirectoryService(region)) {
-            final GetSnapshotLimitsResult result = clientWrapper.getClient()
-                    .getSnapshotLimits(
-                            new GetSnapshotLimitsRequest()
-                                    .withDirectoryId(directoryId)
-                    );
-            return new SnapshotLimitsResponse(result.getSnapshotLimits());
-        } catch (Throwable t) {
-            return new SnapshotLimitsResponse(AmazonResponse.parse(t));
-        }
+        return DirectoryServiceCaller.get(GetSnapshotLimitsRequest.class, SnapshotLimitsResponse.class, credentials, region).execute((client, request, response) -> {
+            final GetSnapshotLimitsResult result = client.getSnapshotLimits(request.withDirectoryId(directoryId));
+            response.setSnapshotLimits(result.getSnapshotLimits());
+        });
     }
 
     @ApiMethod(
@@ -230,17 +203,15 @@ public final class DirectoryServiceApi {
             @Named("directoryId") final String directoryId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSDirectoryService> clientWrapper = new AmazonClientHelper(credentials).getDirectoryService(region)) {
-            final ListIpRoutesResult result = clientWrapper.getClient()
-                    .listIpRoutes(
-                            new ListIpRoutesRequest()
-                                    .withDirectoryId(directoryId)
-                                    .withNextToken(page)
-                    );
-            return new IpRoutesResponse(result.getIpRoutesInfo(), result.getNextToken());
-        } catch (Throwable t) {
-            return new IpRoutesResponse(AmazonResponse.parse(t));
-        }
+        return DirectoryServiceCaller.get(ListIpRoutesRequest.class, IpRoutesResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListIpRoutesResult result = client.listIpRoutes(
+                    request
+                            .withDirectoryId(directoryId)
+                            .withNextToken(page)
+            );
+            response.setIpRoutes(result.getIpRoutesInfo());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -254,17 +225,15 @@ public final class DirectoryServiceApi {
             @Named("directoryId") final String directoryId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSDirectoryService> clientWrapper = new AmazonClientHelper(credentials).getDirectoryService(region)) {
-            final ListSchemaExtensionsResult result = clientWrapper.getClient()
-                    .listSchemaExtensions(
-                            new ListSchemaExtensionsRequest()
-                                    .withDirectoryId(directoryId)
-                                    .withNextToken(page)
-                    );
-            return new SchemaExtensionsResponse(result.getSchemaExtensionsInfo(), result.getNextToken());
-        } catch (Throwable t) {
-            return new SchemaExtensionsResponse(AmazonResponse.parse(t));
-        }
+        return DirectoryServiceCaller.get(ListSchemaExtensionsRequest.class, SchemaExtensionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListSchemaExtensionsResult result = client.listSchemaExtensions(
+                    request
+                            .withDirectoryId(directoryId)
+                            .withNextToken(page)
+            );
+            response.setSchemaExtensions(result.getSchemaExtensionsInfo());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -278,16 +247,14 @@ public final class DirectoryServiceApi {
             @Named("directoryId") final String directoryId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSDirectoryService> clientWrapper = new AmazonClientHelper(credentials).getDirectoryService(region)) {
-            final ListTagsForResourceResult result = clientWrapper.getClient()
-                    .listTagsForResource(
-                            new ListTagsForResourceRequest()
-                                    .withResourceId(directoryId)
-                                    .withNextToken(page)
-                    );
-            return new TagsResponse(result.getTags(), result.getNextToken());
-        } catch (Throwable t) {
-            return new TagsResponse(AmazonResponse.parse(t));
-        }
+        return DirectoryServiceCaller.get(ListTagsForResourceRequest.class, TagsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListTagsForResourceResult result = client.listTagsForResource(
+                    request
+                            .withResourceId(directoryId)
+                            .withNextToken(page)
+            );
+            response.setTags(result.getTags());
+            response.setNextPage(result.getNextToken());
+        });
     }
 }

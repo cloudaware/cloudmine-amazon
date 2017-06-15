@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.dynamodb;
 
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -12,18 +11,6 @@ import java.util.List;
  */
 public final class TableNamesResponse extends AmazonResponse {
     private List<String> tableNames;
-
-    public TableNamesResponse() {
-    }
-
-    public TableNamesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public TableNamesResponse(final List<String> tableNames, final String nextPage) {
-        super(nextPage);
-        this.tableNames = tableNames;
-    }
 
     public List<String> getTableNames() {
         return tableNames;

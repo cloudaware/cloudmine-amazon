@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.iam;
 
 import com.amazonaws.services.identitymanagement.model.ServerCertificateMetadata;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class ServerCertificatesResponse extends AmazonResponse {
     private List<ServerCertificateMetadata> serverCertificates;
-
-    public ServerCertificatesResponse() {
-    }
-
-    public ServerCertificatesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public ServerCertificatesResponse(final List<ServerCertificateMetadata> serverCertificate, final String nextPage) {
-        super(nextPage);
-        this.serverCertificates = serverCertificates;
-    }
 
     public List<ServerCertificateMetadata> getServerCertificates() {
         return serverCertificates;

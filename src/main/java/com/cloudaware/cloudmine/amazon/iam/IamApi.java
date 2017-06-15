@@ -1,10 +1,10 @@
 package com.cloudaware.cloudmine.amazon.iam;
 
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
-import com.amazonaws.services.identitymanagement.model.AccessKeyLastUsed;
 import com.amazonaws.services.identitymanagement.model.CreateAccessKeyRequest;
+import com.amazonaws.services.identitymanagement.model.CreateAccessKeyResult;
 import com.amazonaws.services.identitymanagement.model.GetAccessKeyLastUsedRequest;
 import com.amazonaws.services.identitymanagement.model.GetAccessKeyLastUsedResult;
+import com.amazonaws.services.identitymanagement.model.GetAccountPasswordPolicyRequest;
 import com.amazonaws.services.identitymanagement.model.GetAccountPasswordPolicyResult;
 import com.amazonaws.services.identitymanagement.model.GetGroupPolicyRequest;
 import com.amazonaws.services.identitymanagement.model.GetGroupPolicyResult;
@@ -58,10 +58,7 @@ import com.amazonaws.services.identitymanagement.model.ListUsersRequest;
 import com.amazonaws.services.identitymanagement.model.ListUsersResult;
 import com.amazonaws.services.identitymanagement.model.ListVirtualMFADevicesRequest;
 import com.amazonaws.services.identitymanagement.model.ListVirtualMFADevicesResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -93,6 +90,7 @@ import java.io.UnsupportedEncodingException;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class IamApi {
+
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
             name = "users.list",
@@ -103,15 +101,11 @@ public final class IamApi {
             @Named("partition") final String partition,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListUsersResult result = clientWrapper.getClient().listUsers(
-                    new ListUsersRequest()
-                            .withMarker(page)
-            );
-            return new UsersResponse(result.getUsers(), result.getMarker());
-        } catch (Throwable t) {
-            return new UsersResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(ListUsersRequest.class, UsersResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListUsersResult result = client.listUsers(request.withMarker(page));
+            response.setUsers(result.getUsers());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -123,12 +117,10 @@ public final class IamApi {
             @Named("credentials") final String credentials,
             @Named("partition") final String partition
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final GetUserResult result = clientWrapper.getClient().getUser();
-            return new UserResponse(result.getUser());
-        } catch (Throwable t) {
-            return new UserResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(GetUserRequest.class, UserResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetUserResult result = client.getUser(request);
+            response.setUser(result.getUser());
+        });
     }
 
     @ApiMethod(
@@ -141,12 +133,10 @@ public final class IamApi {
             @Named("partition") final String partition,
             @Named("userName") final String userName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final GetUserResult result = clientWrapper.getClient().getUser(new GetUserRequest().withUserName(userName));
-            return new UserResponse(result.getUser());
-        } catch (Throwable t) {
-            return new UserResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(GetUserRequest.class, UserResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetUserResult result = client.getUser(request.withUserName(userName));
+            response.setUser(result.getUser());
+        });
     }
 
     @ApiMethod(
@@ -160,15 +150,11 @@ public final class IamApi {
             @Named("userName") final String userName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListGroupsForUserResult result = clientWrapper.getClient().listGroupsForUser(
-                    new ListGroupsForUserRequest(userName)
-                            .withMarker(page)
-            );
-            return new GroupsResponse(result.getGroups(), result.getMarker());
-        } catch (Throwable t) {
-            return new GroupsResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(ListGroupsForUserRequest.class, GroupsResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListGroupsForUserResult result = client.listGroupsForUser(request.withUserName(userName).withMarker(page));
+            response.setGroups(result.getGroups());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -182,16 +168,11 @@ public final class IamApi {
             @Named("userName") final String userName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListAccessKeysResult result = clientWrapper.getClient().listAccessKeys(
-                    new ListAccessKeysRequest()
-                            .withUserName(userName)
-                            .withMarker(page)
-            );
-            return new AccessKeysResponse(result.getAccessKeyMetadata(), result.getMarker());
-        } catch (Throwable t) {
-            return new AccessKeysResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(ListAccessKeysRequest.class, AccessKeysResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListAccessKeysResult result = client.listAccessKeys(request.withUserName(userName).withMarker(page));
+            response.setAccessKeys(result.getAccessKeyMetadata());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -204,15 +185,11 @@ public final class IamApi {
             @Named("partition") final String partition,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListGroupsResult result = clientWrapper.getClient().listGroups(
-                    new ListGroupsRequest()
-                            .withMarker(page)
-            );
-            return new GroupsResponse(result.getGroups(), result.getMarker());
-        } catch (Throwable t) {
-            return new GroupsResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(ListGroupsRequest.class, GroupsResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListGroupsResult result = client.listGroups(request.withMarker(page));
+            response.setGroups(result.getGroups());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -225,15 +202,11 @@ public final class IamApi {
             @Named("partition") final String partition,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListRolesResult result = clientWrapper.getClient().listRoles(
-                    new ListRolesRequest()
-                            .withMarker(page)
-            );
-            return new RolesResponse(result.getRoles(), result.getMarker());
-        } catch (Throwable t) {
-            return new RolesResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(ListRolesRequest.class, RolesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListRolesResult result = client.listRoles(request.withMarker(page));
+            response.setRoles(result.getRoles());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -246,16 +219,14 @@ public final class IamApi {
             @Named("partition") final String partition,
             @Named("accessKeyId") final String accessKeyId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final GetAccessKeyLastUsedResult result = clientWrapper.getClient().getAccessKeyLastUsed(new GetAccessKeyLastUsedRequest().withAccessKeyId(accessKeyId));
-            return new AccessKeyLastUsedResponse(
+        return IamCaller.get(GetAccessKeyLastUsedRequest.class, AccessKeyLastUsedResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetAccessKeyLastUsedResult result = client.getAccessKeyLastUsed(request.withAccessKeyId(accessKeyId));
+            response.setAccessKeyLastUsed(
                     result != null && result.getAccessKeyLastUsed() != null
                             ? result.getAccessKeyLastUsed()
-                            : (AccessKeyLastUsed) null
+                            : null
             );
-        } catch (Throwable t) {
-            return new AccessKeyLastUsedResponse(AmazonResponse.parse(t));
-        }
+        });
     }
 
     @ApiMethod(
@@ -268,15 +239,10 @@ public final class IamApi {
             @Named("partition") final String partition,
             @Named("userName") final String userName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            return new AccessKeyResponse(
-                    clientWrapper.getClient()
-                            .createAccessKey(new CreateAccessKeyRequest().withUserName(userName))
-                            .getAccessKey()
-            );
-        } catch (Throwable t) {
-            return new AccessKeyResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(CreateAccessKeyRequest.class, AccessKeyResponse.class, credentials, partition).execute((client, request, response) -> {
+            final CreateAccessKeyResult result = client.createAccessKey(request.withUserName(userName));
+            response.setAccessKey(result.getAccessKey());
+        });
     }
 
     @ApiMethod(
@@ -289,15 +255,11 @@ public final class IamApi {
             @Named("partition") final String partition,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListServerCertificatesResult result = clientWrapper.getClient().listServerCertificates(
-                    new ListServerCertificatesRequest()
-                            .withMarker(page)
-            );
-            return new ServerCertificatesResponse(result.getServerCertificateMetadataList(), result.getMarker());
-        } catch (Throwable t) {
-            return new ServerCertificatesResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(ListServerCertificatesRequest.class, ServerCertificatesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListServerCertificatesResult result = client.listServerCertificates(request.withMarker(page));
+            response.setServerCertificates(result.getServerCertificateMetadataList());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -310,13 +272,10 @@ public final class IamApi {
             @Named("partition") final String partition,
             @Named("serverCertificateName") final String serverCertificateName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final GetServerCertificateResult result = clientWrapper.getClient()
-                    .getServerCertificate(new GetServerCertificateRequest().withServerCertificateName(serverCertificateName));
-            return new ServerCertificateResponse(result.getServerCertificate());
-        } catch (Throwable t) {
-            return new ServerCertificateResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(GetServerCertificateRequest.class, ServerCertificateResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetServerCertificateResult result = client.getServerCertificate(request.withServerCertificateName(serverCertificateName));
+            response.setServerCertificate(result.getServerCertificate());
+        });
     }
 
     @ApiMethod(
@@ -330,16 +289,15 @@ public final class IamApi {
             @Named("userName") final String userName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListSigningCertificatesResult result = clientWrapper.getClient().listSigningCertificates(
-                    new ListSigningCertificatesRequest()
+        return IamCaller.get(ListSigningCertificatesRequest.class, SigningCertificatesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListSigningCertificatesResult result = client.listSigningCertificates(
+                    request
                             .withUserName(userName)
                             .withMarker(page)
             );
-            return new SigningCertificatesResponse(result.getCertificates(), result.getMarker());
-        } catch (Throwable t) {
-            return new SigningCertificatesResponse(AmazonResponse.parse(t));
-        }
+            response.setSigningCertificates(result.getCertificates());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -353,15 +311,15 @@ public final class IamApi {
             @Named("groupName") final String groupName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListGroupPoliciesResult result = clientWrapper.getClient().listGroupPolicies(
-                    new ListGroupPoliciesRequest(groupName)
+        return IamCaller.get(ListGroupPoliciesRequest.class, PolicyNamesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListGroupPoliciesResult result = client.listGroupPolicies(
+                    request
+                            .withGroupName(groupName)
                             .withMarker(page)
             );
-            return new PolicyNamesResponse(result.getPolicyNames(), result.getMarker());
-        } catch (Throwable t) {
-            return new PolicyNamesResponse(AmazonResponse.parse(t));
-        }
+            response.setPolicyNames(result.getPolicyNames());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -375,13 +333,14 @@ public final class IamApi {
             @Named("groupName") final String groupName,
             @Named("policyName") final String policyName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final GetGroupPolicyResult result = clientWrapper.getClient()
-                    .getGroupPolicy(new GetGroupPolicyRequest(groupName, policyName));
-            return new PolicyResponse(result.getPolicyDocument());
-        } catch (Throwable t) {
-            return new PolicyResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(GetGroupPolicyRequest.class, PolicyResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetGroupPolicyResult result = client.getGroupPolicy(
+                    request
+                            .withGroupName(groupName)
+                            .withPolicyName(policyName)
+            );
+            response.setPolicyDocument(result.getPolicyDocument());
+        });
     }
 
     @ApiMethod(
@@ -395,16 +354,15 @@ public final class IamApi {
             @Named("groupName") final String groupName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListAttachedGroupPoliciesResult result = clientWrapper.getClient().listAttachedGroupPolicies(
-                    new ListAttachedGroupPoliciesRequest()
+        return IamCaller.get(ListAttachedGroupPoliciesRequest.class, AttachedPoliciesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListAttachedGroupPoliciesResult result = client.listAttachedGroupPolicies(
+                    request
                             .withGroupName(groupName)
                             .withMarker(page)
             );
-            return new AttachedPoliciesResponse(result.getAttachedPolicies(), result.getMarker());
-        } catch (Throwable t) {
-            return new AttachedPoliciesResponse(AmazonResponse.parse(t));
-        }
+            response.setAttachedPolicies(result.getAttachedPolicies());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -417,13 +375,12 @@ public final class IamApi {
             @Named("partition") final String partition,
             @Named("userName") final String userName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final GetLoginProfileResult result = clientWrapper.getClient()
-                    .getLoginProfile(new GetLoginProfileRequest(userName));
-            return new LoginProfileResponse(result.getLoginProfile());
-        } catch (Throwable t) {
-            return new LoginProfileResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(GetLoginProfileRequest.class, LoginProfileResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetLoginProfileResult result = client.getLoginProfile(
+                    request.withUserName(userName)
+            );
+            response.setLoginProfile(result.getLoginProfile());
+        });
     }
 
     @ApiMethod(
@@ -437,15 +394,13 @@ public final class IamApi {
             @Named("userName") final String userName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListMFADevicesResult result = clientWrapper.getClient().listMFADevices(
-                    new ListMFADevicesRequest(userName)
-                            .withMarker(page)
+        return IamCaller.get(ListMFADevicesRequest.class, MfaDevicesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListMFADevicesResult result = client.listMFADevices(
+                    request.withUserName(userName).withMarker(page)
             );
-            return new MfaDevicesResponse(result.getMFADevices(), result.getMarker());
-        } catch (Throwable t) {
-            return new MfaDevicesResponse(AmazonResponse.parse(t));
-        }
+            response.setMfaDevices(result.getMFADevices());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -457,13 +412,10 @@ public final class IamApi {
             @Named("credentials") final String credentials,
             @Named("partition") final String partition
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final GetAccountPasswordPolicyResult result = clientWrapper.getClient()
-                    .getAccountPasswordPolicy();
-            return new PasswordPolicyResponse(result.getPasswordPolicy());
-        } catch (Throwable t) {
-            return new PasswordPolicyResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(GetAccountPasswordPolicyRequest.class, PasswordPolicyResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetAccountPasswordPolicyResult result = client.getAccountPasswordPolicy(request);
+            response.setPasswordPolicy(result.getPasswordPolicy());
+        });
     }
 
     @ApiMethod(
@@ -478,17 +430,16 @@ public final class IamApi {
             @Named("onlyAttached") @Nullable final Boolean onlyAttached,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListPoliciesResult result = clientWrapper.getClient().listPolicies(
-                    new ListPoliciesRequest()
+        return IamCaller.get(ListPoliciesRequest.class, PoliciesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListPoliciesResult result = client.listPolicies(
+                    request
                             .withScope(scope)
                             .withOnlyAttached(onlyAttached)
                             .withMarker(page)
             );
-            return new PoliciesResponse(result.getPolicies(), result.getMarker());
-        } catch (Throwable t) {
-            return new PoliciesResponse(AmazonResponse.parse(t));
-        }
+            response.setPolicies(result.getPolicies());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -502,16 +453,15 @@ public final class IamApi {
             @Named("policyArn") final String policyArn,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListPolicyVersionsResult result = clientWrapper.getClient().listPolicyVersions(
-                    new ListPolicyVersionsRequest()
+        return IamCaller.get(ListPolicyVersionsRequest.class, PolicyVersionsResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListPolicyVersionsResult result = client.listPolicyVersions(
+                    request
                             .withPolicyArn(policyArn)
                             .withMarker(page)
             );
-            return new PolicyVersionsResponse(result.getVersions(), result.getMarker());
-        } catch (Throwable t) {
-            return new PolicyVersionsResponse(AmazonResponse.parse(t));
-        }
+            response.setPolicyVersions(result.getVersions());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -525,13 +475,14 @@ public final class IamApi {
             @Named("policyArn") final String policyArn,
             @Named("versionId") final String versionId
     ) throws UnsupportedEncodingException, AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final GetPolicyVersionResult result = clientWrapper.getClient()
-                    .getPolicyVersion(new GetPolicyVersionRequest().withPolicyArn(policyArn).withVersionId(versionId));
-            return new PolicyVersionResponse(result.getPolicyVersion());
-        } catch (Throwable t) {
-            return new PolicyVersionResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(GetPolicyVersionRequest.class, PolicyVersionResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetPolicyVersionResult result = client.getPolicyVersion(
+                    request
+                            .withPolicyArn(policyArn)
+                            .withVersionId(versionId)
+            );
+            response.setPolicyVersion(result.getPolicyVersion());
+        });
     }
 
     @ApiMethod(
@@ -545,16 +496,15 @@ public final class IamApi {
             @Named("roleName") final String roleName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListRolePoliciesResult result = clientWrapper.getClient().listRolePolicies(
-                    new ListRolePoliciesRequest()
+        return IamCaller.get(ListRolePoliciesRequest.class, PolicyNamesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListRolePoliciesResult result = client.listRolePolicies(
+                    request
                             .withRoleName(roleName)
                             .withMarker(page)
             );
-            return new PolicyNamesResponse(result.getPolicyNames(), result.getMarker());
-        } catch (Throwable t) {
-            return new PolicyNamesResponse(AmazonResponse.parse(t));
-        }
+            response.setPolicyNames(result.getPolicyNames());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -568,13 +518,14 @@ public final class IamApi {
             @Named("roleName") final String roleName,
             @Named("policyName") final String policyName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final GetRolePolicyResult result = clientWrapper.getClient()
-                    .getRolePolicy(new GetRolePolicyRequest().withRoleName(roleName).withPolicyName(policyName));
-            return new PolicyResponse(result.getPolicyDocument());
-        } catch (Throwable t) {
-            return new PolicyResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(GetRolePolicyRequest.class, PolicyResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetRolePolicyResult result = client.getRolePolicy(
+                    request
+                            .withRoleName(roleName)
+                            .withPolicyName(policyName)
+            );
+            response.setPolicyDocument(result.getPolicyDocument());
+        });
     }
 
     @ApiMethod(
@@ -588,16 +539,15 @@ public final class IamApi {
             @Named("roleName") final String roleName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListAttachedRolePoliciesResult result = clientWrapper.getClient().listAttachedRolePolicies(
-                    new ListAttachedRolePoliciesRequest()
+        return IamCaller.get(ListAttachedRolePoliciesRequest.class, AttachedPoliciesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListAttachedRolePoliciesResult result = client.listAttachedRolePolicies(
+                    request
                             .withRoleName(roleName)
                             .withMarker(page)
             );
-            return new AttachedPoliciesResponse(result.getAttachedPolicies(), result.getMarker());
-        } catch (Throwable t) {
-            return new AttachedPoliciesResponse(AmazonResponse.parse(t));
-        }
+            response.setAttachedPolicies(result.getAttachedPolicies());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -609,14 +559,10 @@ public final class IamApi {
             @Named("credentials") final String credentials,
             @Named("partition") final String partition
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListSAMLProvidersResult result = clientWrapper.getClient().listSAMLProviders(
-                    new ListSAMLProvidersRequest()
-            );
-            return new SamlProvidersResponse(result.getSAMLProviderList());
-        } catch (Throwable t) {
-            return new SamlProvidersResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(ListSAMLProvidersRequest.class, SamlProvidersResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListSAMLProvidersResult result = client.listSAMLProviders(request);
+            response.setSamlProviders(result.getSAMLProviderList());
+        });
     }
 
     @ApiMethod(
@@ -629,17 +575,12 @@ public final class IamApi {
             @Named("partition") final String partition,
             @Named("arn") final String arn
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final GetSAMLProviderResult result = clientWrapper.getClient()
-                    .getSAMLProvider(new GetSAMLProviderRequest().withSAMLProviderArn(arn));
-            return new SamlProviderResponse(
-                    result.getSAMLMetadataDocument(),
-                    result.getCreateDate(),
-                    result.getValidUntil()
-            );
-        } catch (Throwable t) {
-            return new SamlProviderResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(GetSAMLProviderRequest.class, SamlProviderResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetSAMLProviderResult result = client.getSAMLProvider(request.withSAMLProviderArn(arn));
+            response.setMetadataDocument(result.getSAMLMetadataDocument());
+            response.setCreateDate(result.getCreateDate());
+            response.setValidUntil(result.getValidUntil());
+        });
     }
 
     @ApiMethod(
@@ -653,15 +594,11 @@ public final class IamApi {
             @Named("userName") final String userName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListUserPoliciesResult result = clientWrapper.getClient().listUserPolicies(
-                    new ListUserPoliciesRequest(userName)
-                            .withMarker(page)
-            );
-            return new PolicyNamesResponse(result.getPolicyNames(), result.getMarker());
-        } catch (Throwable t) {
-            return new PolicyNamesResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(ListUserPoliciesRequest.class, PolicyNamesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListUserPoliciesResult result = client.listUserPolicies(request.withUserName(userName).withMarker(page));
+            response.setPolicyNames(result.getPolicyNames());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -675,13 +612,10 @@ public final class IamApi {
             @Named("userName") final String userName,
             @Named("policyName") final String policyName
     ) throws UnsupportedEncodingException, AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final GetUserPolicyResult result = clientWrapper.getClient()
-                    .getUserPolicy(new GetUserPolicyRequest(userName, policyName));
-            return new PolicyResponse(result.getPolicyDocument());
-        } catch (Throwable t) {
-            return new PolicyResponse(AmazonResponse.parse(t));
-        }
+        return IamCaller.get(GetUserPolicyRequest.class, PolicyResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetUserPolicyResult result = client.getUserPolicy(request.withUserName(userName).withPolicyName(policyName));
+            response.setPolicyDocument(result.getPolicyDocument());
+        });
     }
 
     @ApiMethod(
@@ -695,16 +629,15 @@ public final class IamApi {
             @Named("userName") final String userName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListAttachedUserPoliciesResult result = clientWrapper.getClient().listAttachedUserPolicies(
-                    new ListAttachedUserPoliciesRequest()
+        return IamCaller.get(ListAttachedUserPoliciesRequest.class, AttachedPoliciesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListAttachedUserPoliciesResult result = client.listAttachedUserPolicies(
+                    request
                             .withUserName(userName)
                             .withMarker(page)
             );
-            return new AttachedPoliciesResponse(result.getAttachedPolicies(), result.getMarker());
-        } catch (Throwable t) {
-            return new AttachedPoliciesResponse(AmazonResponse.parse(t));
-        }
+            response.setAttachedPolicies(result.getAttachedPolicies());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -717,14 +650,13 @@ public final class IamApi {
             @Named("partition") final String partition,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonIdentityManagement> clientWrapper = new AmazonClientHelper(credentials).getIdentityManagement(partition)) {
-            final ListVirtualMFADevicesResult result = clientWrapper.getClient().listVirtualMFADevices(
-                    new ListVirtualMFADevicesRequest()
+        return IamCaller.get(ListVirtualMFADevicesRequest.class, VirtualMfaDevicesResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListVirtualMFADevicesResult result = client.listVirtualMFADevices(
+                    request
                             .withMarker(page)
             );
-            return new VirtualMfaDevicesResponse(result.getVirtualMFADevices(), result.getMarker());
-        } catch (Throwable t) {
-            return new VirtualMfaDevicesResponse(AmazonResponse.parse(t));
-        }
+            response.setVirtualMfaDevices(result.getVirtualMFADevices());
+            response.setNextPage(result.getMarker());
+        });
     }
 }

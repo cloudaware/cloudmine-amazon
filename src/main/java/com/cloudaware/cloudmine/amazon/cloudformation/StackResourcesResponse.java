@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.cloudformation;
 
 import com.amazonaws.services.cloudformation.model.StackResourceSummary;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -14,18 +13,6 @@ import java.util.List;
 public final class StackResourcesResponse extends AmazonResponse {
 
     private List<StackResourceSummary> stackResources;
-
-    public StackResourcesResponse() {
-    }
-
-    public StackResourcesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public StackResourcesResponse(final List<StackResourceSummary> stackResources, final String nextPage) {
-        super(nextPage);
-        this.stackResources = stackResources;
-    }
 
     public List<StackResourceSummary> getStackResources() {
         return stackResources;

@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.cloudsearch;
 
 import com.amazonaws.services.cloudsearchv2.model.DomainStatus;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class DomainsResponse extends AmazonResponse {
     private List<DomainStatus> domains;
-
-    public DomainsResponse() {
-    }
-
-    public DomainsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public DomainsResponse(final List<DomainStatus> domains) {
-        this.domains = domains;
-    }
 
     public List<DomainStatus> getDomains() {
         return domains;

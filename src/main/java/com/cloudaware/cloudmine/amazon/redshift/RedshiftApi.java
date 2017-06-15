@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.redshift;
 
-import com.amazonaws.services.redshift.AmazonRedshift;
 import com.amazonaws.services.redshift.model.CreateTagsRequest;
 import com.amazonaws.services.redshift.model.DeleteTagsRequest;
 import com.amazonaws.services.redshift.model.DescribeClusterParameterGroupsRequest;
@@ -18,10 +17,8 @@ import com.amazonaws.services.redshift.model.DescribeReservedNodesResult;
 import com.amazonaws.services.redshift.model.DescribeTagsRequest;
 import com.amazonaws.services.redshift.model.DescribeTagsResult;
 import com.amazonaws.services.redshift.model.Tag;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -65,15 +62,11 @@ public final class RedshiftApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRedshift> clientWrapper = new AmazonClientHelper(credentials).getRedshift(region)) {
-            final DescribeClustersResult result = clientWrapper.getClient().describeClusters(
-                    new DescribeClustersRequest()
-                            .withMarker(page)
-            );
-            return new ClustersResponse(result.getClusters(), result.getMarker());
-        } catch (Throwable t) {
-            return new ClustersResponse(AmazonResponse.parse(t));
-        }
+        return RedshiftCaller.get(DescribeClustersRequest.class, ClustersResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeClustersResult result = client.describeClusters(request.withMarker(page));
+            response.setClusters(result.getClusters());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -86,15 +79,11 @@ public final class RedshiftApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRedshift> clientWrapper = new AmazonClientHelper(credentials).getRedshift(region)) {
-            final DescribeClusterSnapshotsResult result = clientWrapper.getClient().describeClusterSnapshots(
-                    new DescribeClusterSnapshotsRequest()
-                            .withMarker(page)
-            );
-            return new SnapshotsResponse(result.getSnapshots(), result.getMarker());
-        } catch (Throwable t) {
-            return new SnapshotsResponse(AmazonResponse.parse(t));
-        }
+        return RedshiftCaller.get(DescribeClusterSnapshotsRequest.class, SnapshotsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeClusterSnapshotsResult result = client.describeClusterSnapshots(request.withMarker(page));
+            response.setSnapshots(result.getSnapshots());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -107,15 +96,11 @@ public final class RedshiftApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRedshift> clientWrapper = new AmazonClientHelper(credentials).getRedshift(region)) {
-            final DescribeReservedNodesResult result = clientWrapper.getClient().describeReservedNodes(
-                    new DescribeReservedNodesRequest()
-                            .withMarker(page)
-            );
-            return new ReservedNodesResponse(result.getReservedNodes(), result.getMarker());
-        } catch (Throwable t) {
-            return new ReservedNodesResponse(AmazonResponse.parse(t));
-        }
+        return RedshiftCaller.get(DescribeReservedNodesRequest.class, ReservedNodesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeReservedNodesResult result = client.describeReservedNodes(request.withMarker(page));
+            response.setReservedNodes(result.getReservedNodes());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -128,15 +113,11 @@ public final class RedshiftApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRedshift> clientWrapper = new AmazonClientHelper(credentials).getRedshift(region)) {
-            final DescribeEventsResult result = clientWrapper.getClient().describeEvents(
-                    new DescribeEventsRequest()
-                            .withMarker(page)
-            );
-            return new EventsResponse(result.getEvents(), result.getMarker());
-        } catch (Throwable t) {
-            return new EventsResponse(AmazonResponse.parse(t));
-        }
+        return RedshiftCaller.get(DescribeEventsRequest.class, EventsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeEventsResult result = client.describeEvents(request.withMarker(page));
+            response.setEvents(result.getEvents());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -150,16 +131,11 @@ public final class RedshiftApi {
             @Named("arn") final String arn,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRedshift> clientWrapper = new AmazonClientHelper(credentials).getRedshift(region)) {
-            final DescribeTagsResult result = clientWrapper.getClient().describeTags(
-                    new DescribeTagsRequest()
-                            .withResourceName(arn)
-                            .withMarker(page)
-            );
-            return new TagsResponse(result.getTaggedResources(), result.getMarker());
-        } catch (Throwable t) {
-            return new TagsResponse(AmazonResponse.parse(t));
-        }
+        return RedshiftCaller.get(DescribeTagsRequest.class, TagsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeTagsResult result = client.describeTags(request.withResourceName(arn).withMarker(page));
+            response.setTags(result.getTaggedResources());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -172,9 +148,7 @@ public final class RedshiftApi {
             @Named("region") final String region,
             final TagsRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRedshift> clientWrapper = new AmazonClientHelper(credentials).getRedshift(region)) {
-            final CreateTagsRequest createTagsRequest = new CreateTagsRequest();
-            createTagsRequest.withResourceName(request.getArn());
+        return RedshiftCaller.get(CreateTagsRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
             final List<Tag> tags = Lists.newArrayList();
             for (final String key : request.getTags().keySet()) {
                 final Tag tag = new Tag();
@@ -182,12 +156,9 @@ public final class RedshiftApi {
                 tag.setValue(request.getTags().get(key));
                 tags.add(tag);
             }
-            createTagsRequest.withTags(tags);
-            clientWrapper.getClient().createTags(createTagsRequest);
-            return new AmazonResponse();
-        } catch (Throwable t) {
-            return new AmazonResponse(AmazonResponse.parse(t));
-        }
+
+            client.createTags(r.withResourceName(request.getArn()).withTags(tags));
+        });
     }
 
     @ApiMethod(
@@ -200,15 +171,9 @@ public final class RedshiftApi {
             @Named("region") final String region,
             final TagsRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRedshift> clientWrapper = new AmazonClientHelper(credentials).getRedshift(region)) {
-            final DeleteTagsRequest deleteTagsRequest = new DeleteTagsRequest();
-            deleteTagsRequest.withResourceName(request.getArn());
-            deleteTagsRequest.withTagKeys(request.getTags().keySet());
-            clientWrapper.getClient().deleteTags(deleteTagsRequest);
-            return new AmazonResponse();
-        } catch (Throwable t) {
-            return new AmazonResponse(AmazonResponse.parse(t));
-        }
+        return RedshiftCaller.get(DeleteTagsRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
+            client.deleteTags(r.withResourceName(request.getArn()).withTagKeys(request.getTags().keySet()));
+        });
     }
 
     @ApiMethod(
@@ -221,15 +186,11 @@ public final class RedshiftApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRedshift> clientWrapper = new AmazonClientHelper(credentials).getRedshift(region)) {
-            final DescribeClusterParameterGroupsResult result = clientWrapper.getClient().describeClusterParameterGroups(
-                    new DescribeClusterParameterGroupsRequest()
-                            .withMarker(page)
-            );
-            return new ParameterGroupResponse(result.getParameterGroups(), result.getMarker());
-        } catch (Throwable t) {
-            return new ParameterGroupResponse(AmazonResponse.parse(t));
-        }
+        return RedshiftCaller.get(DescribeClusterParameterGroupsRequest.class, ParameterGroupResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeClusterParameterGroupsResult result = client.describeClusterParameterGroups(request.withMarker(page));
+            response.setParameterGroups(result.getParameterGroups());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -242,15 +203,10 @@ public final class RedshiftApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRedshift> clientWrapper = new AmazonClientHelper(credentials).getRedshift(region)) {
-            final DescribeClusterSecurityGroupsResult result = clientWrapper.getClient().describeClusterSecurityGroups(
-                    new DescribeClusterSecurityGroupsRequest()
-                            .withMarker(page)
-            );
-            return new SecurityGroupResponse(result.getClusterSecurityGroups(), result.getMarker());
-        } catch (Throwable t) {
-            return new SecurityGroupResponse(AmazonResponse.parse(t));
-        }
+        return RedshiftCaller.get(DescribeClusterSecurityGroupsRequest.class, SecurityGroupResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeClusterSecurityGroupsResult result = client.describeClusterSecurityGroups(request.withMarker(page));
+            response.setSecurityGroups(result.getClusterSecurityGroups());
+            response.setNextPage(result.getMarker());
+        });
     }
-
 }

@@ -11,9 +11,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
 public final class PolicyResponse extends AmazonResponse {
     private String policyText;
 
-    public PolicyResponse() {
-    }
-
     public PolicyResponse(final AmazonException exception) {
         super(exception);
     }

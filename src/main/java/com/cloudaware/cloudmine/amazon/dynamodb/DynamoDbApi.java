@@ -1,13 +1,10 @@
 package com.cloudaware.cloudmine.amazon.dynamodb;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.model.DescribeTableRequest;
+import com.amazonaws.services.dynamodbv2.model.DescribeTableResult;
 import com.amazonaws.services.dynamodbv2.model.ListTablesRequest;
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -48,15 +45,13 @@ public final class DynamoDbApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonDynamoDB> clientWrapper = new AmazonClientHelper(credentials).getDynamoDb(region)) {
-            final ListTablesResult response = clientWrapper.getClient().listTables(
-                    new ListTablesRequest()
-                            .withExclusiveStartTableName(page)
+        return DynamoDbCaller.get(ListTablesRequest.class, TableNamesResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListTablesResult result = client.listTables(
+                    request.withExclusiveStartTableName(page)
             );
-            return new TableNamesResponse(response.getTableNames(), response.getLastEvaluatedTableName());
-        } catch (Throwable t) {
-            return new TableNamesResponse(AmazonResponse.parse(t));
-        }
+            response.setTableNames(result.getTableNames());
+            response.setNextPage(result.getLastEvaluatedTableName());
+        });
     }
 
     @ApiMethod(
@@ -69,10 +64,11 @@ public final class DynamoDbApi {
             @Named("region") final String region,
             @Named("tableName") final String tableName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonDynamoDB> clientWrapper = new AmazonClientHelper(credentials).getDynamoDb(region)) {
-            return new TableResponse(clientWrapper.getClient().describeTable(new DescribeTableRequest().withTableName(tableName)).getTable());
-        } catch (Throwable t) {
-            return new TableResponse(AmazonResponse.parse(t));
-        }
+        return DynamoDbCaller.get(DescribeTableRequest.class, TableResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeTableResult result = client.describeTable(
+                    request.withTableName(tableName)
+            );
+            response.setTable(result.getTable());
+        });
     }
 }

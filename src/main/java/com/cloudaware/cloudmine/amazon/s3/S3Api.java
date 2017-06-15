@@ -58,7 +58,7 @@ public final class S3Api {
             final List<Bucket> out = clientWrapper.getClient().listBuckets();
             return new BucketsResponse(out);
         } catch (Throwable t) {
-            return new BucketsResponse(AmazonResponse.parse(t));
+            return new BucketsResponse(AmazonResponse.parse(t, "s3:ListBuckets"));
         }
     }
 
@@ -76,7 +76,7 @@ public final class S3Api {
             final com.amazonaws.services.s3.model.BucketLoggingConfiguration loggingConfiguration = clientWrapper.getClient().getBucketLoggingConfiguration(bucketName);
             return new LoggingConfigurationResponse(loggingConfiguration);
         } catch (Throwable t) {
-            return new LoggingConfigurationResponse(AmazonResponse.parse(t));
+            return new LoggingConfigurationResponse(AmazonResponse.parse(t, "s3:GetBucketLoggingConfiguration"));
         }
     }
 
@@ -94,7 +94,7 @@ public final class S3Api {
             final BucketPolicy bucketPolicy = clientWrapper.getClient().getBucketPolicy(bucketName);
             return new PolicyResponse(bucketPolicy.getPolicyText());
         } catch (Throwable t) {
-            return new PolicyResponse(AmazonResponse.parse(t));
+            return new PolicyResponse(AmazonResponse.parse(t, "s3:GetBucketPolicy"));
         }
     }
 
@@ -112,7 +112,7 @@ public final class S3Api {
             final String location = clientWrapper.getClient().getBucketLocation(bucketName);
             return new LocationResponse(location);
         } catch (Throwable t) {
-            return new LocationResponse(AmazonResponse.parse(t));
+            return new LocationResponse(AmazonResponse.parse(t, "s3:GetBucketLocation"));
         }
     }
 
@@ -131,7 +131,7 @@ public final class S3Api {
                     .getBucketAccelerateConfiguration(new GetBucketAccelerateConfigurationRequest(bucketName));
             return new AccelerateConfigurationResponse(configuration);
         } catch (Throwable t) {
-            return new AccelerateConfigurationResponse(AmazonResponse.parse(t));
+            return new AccelerateConfigurationResponse(AmazonResponse.parse(t, "s3:GetBucketAccelerateConfiguration"));
         }
     }
 
@@ -150,7 +150,7 @@ public final class S3Api {
                     .getBucketVersioningConfiguration(new GetBucketVersioningConfigurationRequest(bucketName));
             return new VersioningConfigurationResponse(configuration);
         } catch (Throwable t) {
-            return new VersioningConfigurationResponse(AmazonResponse.parse(t));
+            return new VersioningConfigurationResponse(AmazonResponse.parse(t, "s3:GetBucketVersioningConfiguration"));
         }
     }
 
@@ -168,7 +168,7 @@ public final class S3Api {
             final BucketTaggingConfiguration tagging = clientWrapper.getClient().getBucketTaggingConfiguration(bucketName);
             return new TagsResponse(tagging == null ? null : tagging.getAllTagSets());
         } catch (Throwable t) {
-            return new TagsResponse(AmazonResponse.parse(t));
+            return new TagsResponse(AmazonResponse.parse(t, "s3:GetBucketTaggingConfiguration"));
         }
     }
 
@@ -191,7 +191,7 @@ public final class S3Api {
             clientWrapper.getClient().setBucketTaggingConfiguration(new SetBucketTaggingConfigurationRequest(bucketName, configuration));
             return new AmazonResponse();
         } catch (Throwable t) {
-            return new AmazonResponse(AmazonResponse.parse(t));
+            return new AmazonResponse(AmazonResponse.parse(t, "s3:SetBucketTaggingConfiguration"));
         }
     }
 
@@ -219,7 +219,7 @@ public final class S3Api {
             );
             return new ObjectsResponse(objectListing, objectListing.getNextMarker());
         } catch (Throwable t) {
-            return new ObjectsResponse(AmazonResponse.parse(t));
+            return new ObjectsResponse(AmazonResponse.parse(t, "s3:ListObjects"));
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.elasticbeanstalk;
 
 import com.amazonaws.services.elasticbeanstalk.model.ConfigurationOptionDescription;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class ConfigurationOptionsResponse extends AmazonResponse {
     private List<ConfigurationOptionDescription> configurationOptions;
-
-    public ConfigurationOptionsResponse() {
-    }
-
-    public ConfigurationOptionsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public ConfigurationOptionsResponse(final List<ConfigurationOptionDescription> configurationOptions) {
-        this.configurationOptions = configurationOptions;
-    }
 
     public List<ConfigurationOptionDescription> getConfigurationOptions() {
         return configurationOptions;

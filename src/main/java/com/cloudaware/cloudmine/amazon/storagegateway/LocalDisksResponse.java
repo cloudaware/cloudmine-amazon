@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.storagegateway;
 
 import com.amazonaws.services.storagegateway.model.Disk;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class LocalDisksResponse extends AmazonResponse {
     private List<Disk> disks;
-
-    public LocalDisksResponse() {
-    }
-
-    public LocalDisksResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public LocalDisksResponse(final List<Disk> disks) {
-        this.disks = disks;
-    }
 
     public List<Disk> getDisks() {
         return disks;

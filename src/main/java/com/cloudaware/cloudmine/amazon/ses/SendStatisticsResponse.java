@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.ses;
 
 import com.amazonaws.services.simpleemail.model.SendDataPoint;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class SendStatisticsResponse extends AmazonResponse {
     private List<SendDataPoint> sendDataPoints;
-
-    public SendStatisticsResponse() {
-    }
-
-    public SendStatisticsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public SendStatisticsResponse(final List<SendDataPoint> sendDataPoints) {
-        this.sendDataPoints = sendDataPoints;
-    }
 
     public List<SendDataPoint> getSendDataPoints() {
         return sendDataPoints;

@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.storagegateway;
 
 import com.amazonaws.services.storagegateway.model.VolumeRecoveryPointInfo;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class VolumeRecoveryPointsResponse extends AmazonResponse {
     private List<VolumeRecoveryPointInfo> volumeRecoveryPoints;
-
-    public VolumeRecoveryPointsResponse() {
-    }
-
-    public VolumeRecoveryPointsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public VolumeRecoveryPointsResponse(final List<VolumeRecoveryPointInfo> volumeRecoveryPoints) {
-        this.volumeRecoveryPoints = volumeRecoveryPoints;
-    }
 
     public List<VolumeRecoveryPointInfo> getVolumeRecoveryPoints() {
         return volumeRecoveryPoints;

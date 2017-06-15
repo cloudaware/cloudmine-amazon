@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.kms;
 
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -10,17 +9,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
  */
 public final class PolicyResponse extends AmazonResponse {
     private String policy;
-
-    public PolicyResponse() {
-    }
-
-    public PolicyResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public PolicyResponse(final String policy) {
-        this.policy = policy;
-    }
 
     public String getPolicy() {
         return policy;

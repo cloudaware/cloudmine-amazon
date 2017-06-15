@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.directconnect;
 
-import com.amazonaws.services.directconnect.AmazonDirectConnect;
 import com.amazonaws.services.directconnect.model.DescribeConnectionsOnInterconnectRequest;
 import com.amazonaws.services.directconnect.model.DescribeConnectionsOnInterconnectResult;
 import com.amazonaws.services.directconnect.model.DescribeConnectionsRequest;
@@ -9,10 +8,7 @@ import com.amazonaws.services.directconnect.model.DescribeInterconnectsRequest;
 import com.amazonaws.services.directconnect.model.DescribeInterconnectsResult;
 import com.amazonaws.services.directconnect.model.DescribeVirtualInterfacesRequest;
 import com.amazonaws.services.directconnect.model.DescribeVirtualInterfacesResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -42,6 +38,7 @@ import com.google.api.server.spi.config.Nullable;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class DirectConnectApi {
+
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
             name = "connections.list",
@@ -52,13 +49,10 @@ public final class DirectConnectApi {
             @Named("region") final String region,
             @Named("connectionId") @Nullable final String connectionId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonDirectConnect> clientWrapper = new AmazonClientHelper(credentials).getDirectConnect(region)) {
-            final DescribeConnectionsResult result = clientWrapper.getClient()
-                    .describeConnections(new DescribeConnectionsRequest().withConnectionId(connectionId));
-            return new ConnectionsResponse(result.getConnections());
-        } catch (Throwable t) {
-            return new ConnectionsResponse(AmazonResponse.parse(t));
-        }
+        return DirectConnectCaller.get(DescribeConnectionsRequest.class, ConnectionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeConnectionsResult result = client.describeConnections(request.withConnectionId(connectionId));
+            response.setConnections(result.getConnections());
+        });
     }
 
     @ApiMethod(
@@ -71,13 +65,10 @@ public final class DirectConnectApi {
             @Named("region") final String region,
             @Named("interconnectId") @Nullable final String interconnectId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonDirectConnect> clientWrapper = new AmazonClientHelper(credentials).getDirectConnect(region)) {
-            final DescribeInterconnectsResult result = clientWrapper.getClient()
-                    .describeInterconnects(new DescribeInterconnectsRequest().withInterconnectId(interconnectId));
-            return new InterconnectsResponse(result.getInterconnects());
-        } catch (Throwable t) {
-            return new InterconnectsResponse(AmazonResponse.parse(t));
-        }
+        return DirectConnectCaller.get(DescribeInterconnectsRequest.class, InterconnectsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeInterconnectsResult result = client.describeInterconnects(request.withInterconnectId(interconnectId));
+            response.setInterconnects(result.getInterconnects());
+        });
     }
 
     @ApiMethod(
@@ -90,13 +81,10 @@ public final class DirectConnectApi {
             @Named("region") final String region,
             @Named("interconnectId") final String interconnectId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonDirectConnect> clientWrapper = new AmazonClientHelper(credentials).getDirectConnect(region)) {
-            final DescribeConnectionsOnInterconnectResult result = clientWrapper.getClient()
-                    .describeConnectionsOnInterconnect(new DescribeConnectionsOnInterconnectRequest().withInterconnectId(interconnectId));
-            return new ConnectionsResponse(result.getConnections());
-        } catch (Throwable t) {
-            return new ConnectionsResponse(AmazonResponse.parse(t));
-        }
+        return DirectConnectCaller.get(DescribeConnectionsOnInterconnectRequest.class, ConnectionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeConnectionsOnInterconnectResult result = client.describeConnectionsOnInterconnect(request.withInterconnectId(interconnectId));
+            response.setConnections(result.getConnections());
+        });
     }
 
     @ApiMethod(
@@ -110,16 +98,13 @@ public final class DirectConnectApi {
             @Named("connectionId") @Nullable final String connectionId,
             @Named("virtualInterfaceId") @Nullable final String virtualInterfaceId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonDirectConnect> clientWrapper = new AmazonClientHelper(credentials).getDirectConnect(region)) {
-            final DescribeVirtualInterfacesResult result = clientWrapper.getClient()
-                    .describeVirtualInterfaces(
-                            new DescribeVirtualInterfacesRequest()
-                                    .withConnectionId(connectionId)
-                                    .withVirtualInterfaceId(virtualInterfaceId)
-                    );
-            return new VirtualInterfacesResponse(result.getVirtualInterfaces());
-        } catch (Throwable t) {
-            return new VirtualInterfacesResponse(AmazonResponse.parse(t));
-        }
+        return DirectConnectCaller.get(DescribeVirtualInterfacesRequest.class, VirtualInterfacesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVirtualInterfacesResult result = client.describeVirtualInterfaces(
+                    request
+                            .withConnectionId(connectionId)
+                            .withVirtualInterfaceId(virtualInterfaceId)
+            );
+            response.setVirtualInterfaces(result.getVirtualInterfaces());
+        });
     }
 }

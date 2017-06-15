@@ -1,16 +1,12 @@
 package com.cloudaware.cloudmine.amazon.support;
 
-import com.amazonaws.services.support.AWSSupport;
 import com.amazonaws.services.support.model.DescribeCasesRequest;
 import com.amazonaws.services.support.model.DescribeCasesResult;
 import com.amazonaws.services.support.model.DescribeTrustedAdvisorCheckResultRequest;
 import com.amazonaws.services.support.model.DescribeTrustedAdvisorCheckResultResult;
 import com.amazonaws.services.support.model.DescribeTrustedAdvisorChecksRequest;
 import com.amazonaws.services.support.model.DescribeTrustedAdvisorChecksResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -39,6 +35,7 @@ import com.google.api.server.spi.config.Nullable;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class SupportApi {
+
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
             name = "cases.list",
@@ -49,16 +46,11 @@ public final class SupportApi {
             @Named("includeResolved") @Nullable final Boolean includeResolved,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSSupport> clientWrapper = new AmazonClientHelper(credentials).getAwsSupport()) {
-            final DescribeCasesResult response = clientWrapper.getClient().describeCases(
-                    new DescribeCasesRequest()
-                            .withIncludeResolvedCases(includeResolved)
-                            .withNextToken(page)
-            );
-            return new CasesResponse(response.getCases(), response.getNextToken());
-        } catch (Throwable t) {
-            return new CasesResponse(AmazonResponse.parse(t));
-        }
+        return SupportCaller.get(DescribeCasesRequest.class, CasesResponse.class, credentials).execute((client, request, response) -> {
+            final DescribeCasesResult result = client.describeCases(request.withIncludeResolvedCases(includeResolved).withNextToken(page));
+            response.setCases(result.getCases());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -69,12 +61,10 @@ public final class SupportApi {
     public TrustedAdvisorChecksResponse trustedAdvisorChecksList(
             @Named("credentials") final String credentials
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSSupport> clientWrapper = new AmazonClientHelper(credentials).getAwsSupport()) {
-            final DescribeTrustedAdvisorChecksResult result = clientWrapper.getClient().describeTrustedAdvisorChecks(new DescribeTrustedAdvisorChecksRequest().withLanguage("en"));
-            return new TrustedAdvisorChecksResponse(result.getChecks());
-        } catch (Throwable t) {
-            return new TrustedAdvisorChecksResponse(AmazonResponse.parse(t));
-        }
+        return SupportCaller.get(DescribeTrustedAdvisorChecksRequest.class, TrustedAdvisorChecksResponse.class, credentials).execute((client, request, response) -> {
+            final DescribeTrustedAdvisorChecksResult result = client.describeTrustedAdvisorChecks(request.withLanguage("en"));
+            response.setTrustedAdvisorChecks(result.getChecks());
+        });
     }
 
     @ApiMethod(
@@ -86,12 +76,10 @@ public final class SupportApi {
             @Named("credentials") final String credentials,
             @Named("checkId") final String checkId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSSupport> clientWrapper = new AmazonClientHelper(credentials).getAwsSupport()) {
-            final DescribeTrustedAdvisorCheckResultResult result = clientWrapper.getClient().describeTrustedAdvisorCheckResult(new DescribeTrustedAdvisorCheckResultRequest().withCheckId(checkId));
-            return new TrustedAdvisorCheckResultResponse(result.getResult());
-        } catch (Throwable t) {
-            return new TrustedAdvisorCheckResultResponse(AmazonResponse.parse(t));
-        }
+        return SupportCaller.get(DescribeTrustedAdvisorCheckResultRequest.class, TrustedAdvisorCheckResultResponse.class, credentials).execute((client, request, response) -> {
+            final DescribeTrustedAdvisorCheckResultResult result = client.describeTrustedAdvisorCheckResult(request.withCheckId(checkId));
+            response.setTrustedAdvisorCheckResult(result.getResult());
+        });
     }
 
 }

@@ -1,23 +1,22 @@
 package com.cloudaware.cloudmine.amazon.elasticbeanstalk;
 
-import com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalk;
-import com.amazonaws.services.elasticbeanstalk.model.ApplicationDescription;
-import com.amazonaws.services.elasticbeanstalk.model.ConfigurationOptionDescription;
-import com.amazonaws.services.elasticbeanstalk.model.ConfigurationSettingsDescription;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationVersionsRequest;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationVersionsResult;
+import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationsRequest;
+import com.amazonaws.services.elasticbeanstalk.model.DescribeApplicationsResult;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeConfigurationOptionsRequest;
+import com.amazonaws.services.elasticbeanstalk.model.DescribeConfigurationOptionsResult;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeConfigurationSettingsRequest;
+import com.amazonaws.services.elasticbeanstalk.model.DescribeConfigurationSettingsResult;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentResourcesRequest;
+import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentResourcesResult;
+import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsRequest;
+import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEventsRequest;
 import com.amazonaws.services.elasticbeanstalk.model.DescribeEventsResult;
-import com.amazonaws.services.elasticbeanstalk.model.EnvironmentDescription;
-import com.amazonaws.services.elasticbeanstalk.model.EnvironmentResourceDescription;
-import com.amazonaws.services.elasticbeanstalk.model.SolutionStackDescription;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
+import com.amazonaws.services.elasticbeanstalk.model.ListAvailableSolutionStacksRequest;
+import com.amazonaws.services.elasticbeanstalk.model.ListAvailableSolutionStacksResult;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -25,8 +24,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
-
-import java.util.List;
 
 /**
  * User: urmuzov
@@ -49,6 +46,7 @@ import java.util.List;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class ElasticBeanstalkApi {
+
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
             name = "applications.list",
@@ -58,12 +56,10 @@ public final class ElasticBeanstalkApi {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSElasticBeanstalk> clientWrapper = new AmazonClientHelper(credentials).getElasticBeanstalk(region)) {
-            final List<ApplicationDescription> out = clientWrapper.getClient().describeApplications().getApplications();
-            return new ApplicationsResponse(out);
-        } catch (Throwable t) {
-            return new ApplicationsResponse(AmazonResponse.parse(t));
-        }
+        return ElasticBeanstalkCaller.get(DescribeApplicationsRequest.class, ApplicationsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeApplicationsResult result = client.describeApplications(request);
+            response.setApplications(result.getApplications());
+        });
     }
 
     @ApiMethod(
@@ -76,15 +72,11 @@ public final class ElasticBeanstalkApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSElasticBeanstalk> clientWrapper = new AmazonClientHelper(credentials).getElasticBeanstalk(region)) {
-            final DescribeApplicationVersionsResult result = clientWrapper.getClient().describeApplicationVersions(
-                    new DescribeApplicationVersionsRequest()
-                            .withNextToken(page)
-            );
-            return new ApplicationVersionsResponse(result.getApplicationVersions(), result.getNextToken());
-        } catch (Throwable t) {
-            return new ApplicationVersionsResponse(AmazonResponse.parse(t));
-        }
+        return ElasticBeanstalkCaller.get(DescribeApplicationVersionsRequest.class, ApplicationVersionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeApplicationVersionsResult result = client.describeApplicationVersions(request.withNextToken(page));
+            response.setApplicationVersions(result.getApplicationVersions());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -96,12 +88,10 @@ public final class ElasticBeanstalkApi {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSElasticBeanstalk> clientWrapper = new AmazonClientHelper(credentials).getElasticBeanstalk(region)) {
-            final List<ConfigurationOptionDescription> out = clientWrapper.getClient().describeConfigurationOptions(new DescribeConfigurationOptionsRequest()).getOptions();
-            return new ConfigurationOptionsResponse(out);
-        } catch (Throwable t) {
-            return new ConfigurationOptionsResponse(AmazonResponse.parse(t));
-        }
+        return ElasticBeanstalkCaller.get(DescribeConfigurationOptionsRequest.class, ConfigurationOptionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeConfigurationOptionsResult result = client.describeConfigurationOptions(request);
+            response.setConfigurationOptions(result.getOptions());
+        });
     }
 
     @ApiMethod(
@@ -116,14 +106,15 @@ public final class ElasticBeanstalkApi {
             @Named("templateName") @Nullable final String templateName,
             @Named("environmentName") @Nullable final String environmentName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSElasticBeanstalk> clientWrapper = new AmazonClientHelper(credentials).getElasticBeanstalk(region)) {
-            final List<ConfigurationSettingsDescription> out = clientWrapper.getClient().describeConfigurationSettings(
-                    new DescribeConfigurationSettingsRequest().withApplicationName(applicationName).withTemplateName(templateName).withEnvironmentName(environmentName)
-            ).getConfigurationSettings();
-            return new ConfigurationSettingsResponse(out);
-        } catch (Throwable t) {
-            return new ConfigurationSettingsResponse(AmazonResponse.parse(t));
-        }
+        return ElasticBeanstalkCaller.get(DescribeConfigurationSettingsRequest.class, ConfigurationSettingsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeConfigurationSettingsResult result = client.describeConfigurationSettings(
+                    request
+                            .withApplicationName(applicationName)
+                            .withTemplateName(templateName)
+                            .withEnvironmentName(environmentName)
+            );
+            response.setConfigurationSettings(result.getConfigurationSettings());
+        });
     }
 
     @ApiMethod(
@@ -135,12 +126,10 @@ public final class ElasticBeanstalkApi {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSElasticBeanstalk> clientWrapper = new AmazonClientHelper(credentials).getElasticBeanstalk(region)) {
-            final List<EnvironmentDescription> out = clientWrapper.getClient().describeEnvironments().getEnvironments();
-            return new EnvironmentsResponse(out);
-        } catch (Throwable t) {
-            return new EnvironmentsResponse(AmazonResponse.parse(t));
-        }
+        return ElasticBeanstalkCaller.get(DescribeEnvironmentsRequest.class, EnvironmentsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeEnvironmentsResult result = client.describeEnvironments(request);
+            response.setEnvironments(result.getEnvironments());
+        });
     }
 
     @ApiMethod(
@@ -153,15 +142,10 @@ public final class ElasticBeanstalkApi {
             @Named("region") final String region,
             @Named("environmentId") final String environmentId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSElasticBeanstalk> clientWrapper = new AmazonClientHelper(credentials).getElasticBeanstalk(region)) {
-            final EnvironmentResourceDescription out = clientWrapper.getClient().describeEnvironmentResources(
-                    new DescribeEnvironmentResourcesRequest()
-                            .withEnvironmentId(environmentId)
-            ).getEnvironmentResources();
-            return new EnvironmentResourcesResponse(out);
-        } catch (Throwable t) {
-            return new EnvironmentResourcesResponse(AmazonResponse.parse(t));
-        }
+        return ElasticBeanstalkCaller.get(DescribeEnvironmentResourcesRequest.class, EnvironmentResourcesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeEnvironmentResourcesResult result = client.describeEnvironmentResources(request.withEnvironmentId(environmentId));
+            response.setEnvironmentResources(result.getEnvironmentResources());
+        });
     }
 
     @ApiMethod(
@@ -174,15 +158,11 @@ public final class ElasticBeanstalkApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSElasticBeanstalk> clientWrapper = new AmazonClientHelper(credentials).getElasticBeanstalk(region)) {
-            final DescribeEventsResult result = clientWrapper.getClient().describeEvents(
-                    new DescribeEventsRequest()
-                            .withNextToken(page)
-            );
-            return new EventsResponse(result.getEvents(), result.getNextToken());
-        } catch (Throwable t) {
-            return new EventsResponse(AmazonResponse.parse(t));
-        }
+        return ElasticBeanstalkCaller.get(DescribeEventsRequest.class, EventsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeEventsResult result = client.describeEvents(request.withNextToken(page));
+            response.setEvents(result.getEvents());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -194,11 +174,9 @@ public final class ElasticBeanstalkApi {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSElasticBeanstalk> clientWrapper = new AmazonClientHelper(credentials).getElasticBeanstalk(region)) {
-            final List<SolutionStackDescription> out = clientWrapper.getClient().listAvailableSolutionStacks().getSolutionStackDetails();
-            return new SolutionStacksResponse(out);
-        } catch (Throwable t) {
-            return new SolutionStacksResponse(AmazonResponse.parse(t));
-        }
+        return ElasticBeanstalkCaller.get(ListAvailableSolutionStacksRequest.class, SolutionStacksResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListAvailableSolutionStacksResult result = client.listAvailableSolutionStacks(request);
+            response.setSolutionStacks(result.getSolutionStackDetails());
+        });
     }
 }

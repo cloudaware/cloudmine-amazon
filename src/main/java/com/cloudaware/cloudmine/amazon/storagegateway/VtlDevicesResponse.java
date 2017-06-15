@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.storagegateway;
 
 import com.amazonaws.services.storagegateway.model.VTLDevice;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class VtlDevicesResponse extends AmazonResponse {
     private List<VTLDevice> vtlDevices;
-
-    public VtlDevicesResponse() {
-    }
-
-    public VtlDevicesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public VtlDevicesResponse(final List<VTLDevice> vtlDevices, final String nextPage) {
-        super(nextPage);
-        this.vtlDevices = vtlDevices;
-    }
 
     public List<VTLDevice> getVtlDevices() {
         return vtlDevices;

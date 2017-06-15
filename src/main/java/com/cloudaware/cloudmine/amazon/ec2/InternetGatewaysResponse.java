@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.ec2;
 
 import com.amazonaws.services.ec2.model.InternetGateway;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -14,17 +13,6 @@ import java.util.List;
 public final class InternetGatewaysResponse extends AmazonResponse {
 
     private List<InternetGateway> internetGateways;
-
-    public InternetGatewaysResponse() {
-    }
-
-    public InternetGatewaysResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public InternetGatewaysResponse(final List<InternetGateway> internetGateways) {
-        this.internetGateways = internetGateways;
-    }
 
     public List<InternetGateway> getInternetGateways() {
         return internetGateways;

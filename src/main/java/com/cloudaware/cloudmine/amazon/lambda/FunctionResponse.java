@@ -2,7 +2,6 @@ package com.cloudaware.cloudmine.amazon.lambda;
 
 import com.amazonaws.services.lambda.model.FunctionCodeLocation;
 import com.amazonaws.services.lambda.model.FunctionConfiguration;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -13,18 +12,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
 public final class FunctionResponse extends AmazonResponse {
     private FunctionConfiguration configuration;
     private FunctionCodeLocation code;
-
-    public FunctionResponse() {
-    }
-
-    public FunctionResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public FunctionResponse(final FunctionConfiguration configuration, final FunctionCodeLocation code) {
-        this.configuration = configuration;
-        this.code = code;
-    }
 
     public FunctionConfiguration getConfiguration() {
         return configuration;

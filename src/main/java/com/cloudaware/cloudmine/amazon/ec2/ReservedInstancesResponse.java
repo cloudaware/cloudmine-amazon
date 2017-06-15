@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.ec2;
 
 import com.amazonaws.services.ec2.model.ReservedInstances;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class ReservedInstancesResponse extends AmazonResponse {
     private List<ReservedInstances> reservedInstances;
-
-    public ReservedInstancesResponse() {
-    }
-
-    public ReservedInstancesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public ReservedInstancesResponse(final List<ReservedInstances> reservedInstances) {
-        this.reservedInstances = reservedInstances;
-    }
 
     public List<ReservedInstances> getReservedInstances() {
         return reservedInstances;

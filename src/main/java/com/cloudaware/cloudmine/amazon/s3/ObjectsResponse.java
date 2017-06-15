@@ -12,9 +12,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
 public final class ObjectsResponse extends AmazonResponse {
     private ObjectListing objects;
 
-    public ObjectsResponse() {
-    }
-
     public ObjectsResponse(final AmazonException exception) {
         super(exception);
     }

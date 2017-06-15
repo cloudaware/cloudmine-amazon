@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.storagegateway;
 
 import com.amazonaws.services.storagegateway.model.GatewayInfo;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class GatewaysResponse extends AmazonResponse {
     private List<GatewayInfo> gateways;
-
-    public GatewaysResponse() {
-    }
-
-    public GatewaysResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public GatewaysResponse(final List<GatewayInfo> gateways, final String nextPage) {
-        super(nextPage);
-        this.gateways = gateways;
-    }
 
     public List<GatewayInfo> getGateways() {
         return gateways;

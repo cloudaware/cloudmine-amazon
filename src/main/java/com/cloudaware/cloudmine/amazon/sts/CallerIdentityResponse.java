@@ -32,4 +32,16 @@ public final class CallerIdentityResponse extends AmazonResponse {
     public String getArn() {
         return arn;
     }
+
+    public void setUserId(final String userId) {
+        this.userId = userId;
+    }
+
+    public void setAccount(final String account) {
+        this.account = account;
+    }
+
+    public void setArn(final String arn) {
+        this.arn = arn;
+    }
 }

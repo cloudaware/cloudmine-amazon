@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.storagegateway;
 
 import com.amazonaws.services.storagegateway.model.TapeRecoveryPointInfo;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class TapeRecoveryPointsResponse extends AmazonResponse {
     private List<TapeRecoveryPointInfo> tapeRecoveryPoints;
-
-    public TapeRecoveryPointsResponse() {
-    }
-
-    public TapeRecoveryPointsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public TapeRecoveryPointsResponse(final List<TapeRecoveryPointInfo> tapeRecoveryPoint, final String nextPage) {
-        super(nextPage);
-        this.tapeRecoveryPoints = tapeRecoveryPoints;
-    }
 
     public List<TapeRecoveryPointInfo> getTapeRecoveryPoints() {
         return tapeRecoveryPoints;

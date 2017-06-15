@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.cloudsearch;
 
 import com.amazonaws.services.cloudsearchv2.model.IndexFieldStatus;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class IndexFieldsResponse extends AmazonResponse {
     private List<IndexFieldStatus> indexFields;
-
-    public IndexFieldsResponse() {
-    }
-
-    public IndexFieldsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public IndexFieldsResponse(final List<IndexFieldStatus> indexFields) {
-        this.indexFields = indexFields;
-    }
 
     public List<IndexFieldStatus> getIndexFields() {
         return indexFields;

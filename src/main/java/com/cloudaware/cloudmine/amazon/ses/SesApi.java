@@ -1,12 +1,11 @@
 package com.cloudaware.cloudmine.amazon.ses;
 
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
+import com.amazonaws.services.simpleemail.model.GetSendStatisticsRequest;
+import com.amazonaws.services.simpleemail.model.GetSendStatisticsResult;
 import com.amazonaws.services.simpleemail.model.RawMessage;
 import com.amazonaws.services.simpleemail.model.SendRawEmailRequest;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
+import com.amazonaws.services.simpleemail.model.SendRawEmailResult;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -62,11 +61,10 @@ public final class SesApi {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonSimpleEmailService> clientWrapper = new AmazonClientHelper(credentials).getSes(region)) {
-            return new SendStatisticsResponse(clientWrapper.getClient().getSendStatistics().getSendDataPoints());
-        } catch (Throwable t) {
-            return new SendStatisticsResponse(AmazonResponse.parse(t));
-        }
+        return SesCaller.get(GetSendStatisticsRequest.class, SendStatisticsResponse.class, credentials, region).execute((client, request, response) -> {
+            final GetSendStatisticsResult result = client.getSendStatistics(request);
+            response.setSendDataPoints(result.getSendDataPoints());
+        });
     }
 
     @ApiMethod(
@@ -79,7 +77,7 @@ public final class SesApi {
             @Named("region") final String region,
             final SendRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonSimpleEmailService> clientWrapper = new AmazonClientHelper(credentials).getSes(region)) {
+        return SesCaller.get(SendRawEmailRequest.class, SendResponse.class, credentials, region).execute((client, r, response) -> {
             final Session session = Session.getInstance(new Properties(), null);
             final MimeMessage mimeMessage = new MimeMessage(session);
             mimeMessage.setFrom(new InternetAddress(request.getSource()));
@@ -140,13 +138,10 @@ public final class SesApi {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             mimeMessage.writeTo(outputStream);
             final RawMessage rawMessage = new RawMessage(ByteBuffer.wrap(outputStream.toByteArray()));
-
             // Send Mail
-            final SendRawEmailRequest rawEmailRequest = new SendRawEmailRequest(rawMessage);
+            final SendRawEmailResult result = client.sendRawEmail(r.withRawMessage(rawMessage));
 
-            return new SendResponse(clientWrapper.getClient().sendRawEmail(rawEmailRequest).getMessageId());
-        } catch (Throwable t) {
-            return new SendResponse(AmazonResponse.parse(t));
-        }
+            response.setMessageId(result.getMessageId());
+        });
     }
 }

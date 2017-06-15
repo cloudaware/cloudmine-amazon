@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.dynamodb;
 
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -11,17 +10,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
  */
 public final class TableResponse extends AmazonResponse {
     private TableDescription table;
-
-    public TableResponse() {
-    }
-
-    public TableResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public TableResponse(final TableDescription table) {
-        this.table = table;
-    }
 
     public TableDescription getTable() {
         return table;

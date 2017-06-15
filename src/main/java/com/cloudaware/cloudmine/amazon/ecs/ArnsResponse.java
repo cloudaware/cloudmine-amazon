@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.ecs;
 
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -12,18 +11,6 @@ import java.util.List;
  */
 public final class ArnsResponse extends AmazonResponse {
     private List<String> arns;
-
-    public ArnsResponse() {
-    }
-
-    public ArnsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public ArnsResponse(final List<String> arns, final String nextPage) {
-        super(nextPage);
-        this.arns = arns;
-    }
 
     public List<String> getArns() {
         return arns;

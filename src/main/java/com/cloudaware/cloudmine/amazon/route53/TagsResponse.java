@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.route53;
 
 import com.amazonaws.services.route53.model.ResourceTagSet;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -11,17 +10,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
  */
 public final class TagsResponse extends AmazonResponse {
     private ResourceTagSet tags;
-
-    public TagsResponse() {
-    }
-
-    public TagsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public TagsResponse(final ResourceTagSet tags) {
-        this.tags = tags;
-    }
 
     public ResourceTagSet getTags() {
         return tags;

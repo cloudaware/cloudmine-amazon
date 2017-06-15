@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.cloudsearch;
 
 import com.amazonaws.services.cloudsearchv2.model.ExpressionStatus;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class ExpressionsResponse extends AmazonResponse {
     private List<ExpressionStatus> expressions;
-
-    public ExpressionsResponse() {
-    }
-
-    public ExpressionsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public ExpressionsResponse(final List<ExpressionStatus> expressions) {
-        this.expressions = expressions;
-    }
 
     public List<ExpressionStatus> getExpressions() {
         return expressions;

@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.directconnect;
 
 import com.amazonaws.services.directconnect.model.VirtualInterface;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class VirtualInterfacesResponse extends AmazonResponse {
     private List<VirtualInterface> virtualInterfaces;
-
-    public VirtualInterfacesResponse() {
-    }
-
-    public VirtualInterfacesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public VirtualInterfacesResponse(final List<VirtualInterface> virtualInterfaces) {
-        this.virtualInterfaces = virtualInterfaces;
-    }
 
     public List<VirtualInterface> getVirtualInterfaces() {
         return virtualInterfaces;

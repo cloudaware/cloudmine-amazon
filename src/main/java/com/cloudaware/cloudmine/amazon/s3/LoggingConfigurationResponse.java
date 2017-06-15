@@ -12,9 +12,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
 public final class LoggingConfigurationResponse extends AmazonResponse {
     private BucketLoggingConfiguration loggingConfiguration;
 
-    public LoggingConfigurationResponse() {
-    }
-
     public LoggingConfigurationResponse(final AmazonException exception) {
         super(exception);
     }

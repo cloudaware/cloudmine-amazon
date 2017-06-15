@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.ecs;
 
 import com.amazonaws.services.ecs.model.ContainerInstance;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class ContainerInstancesResponse extends AmazonResponse {
     private List<ContainerInstance> containerInstances;
-
-    public ContainerInstancesResponse() {
-    }
-
-    public ContainerInstancesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public ContainerInstancesResponse(final List<ContainerInstance> containerInstances) {
-        this.containerInstances = containerInstances;
-    }
 
     public List<ContainerInstance> getContainerInstances() {
         return containerInstances;

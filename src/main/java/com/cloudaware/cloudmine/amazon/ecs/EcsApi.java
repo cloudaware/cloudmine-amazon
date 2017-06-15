@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.ecs;
 
-import com.amazonaws.services.ecs.AmazonECS;
 import com.amazonaws.services.ecs.model.DescribeClustersRequest;
 import com.amazonaws.services.ecs.model.DescribeClustersResult;
 import com.amazonaws.services.ecs.model.DescribeContainerInstancesRequest;
@@ -21,10 +20,7 @@ import com.amazonaws.services.ecs.model.ListTaskDefinitionsRequest;
 import com.amazonaws.services.ecs.model.ListTaskDefinitionsResult;
 import com.amazonaws.services.ecs.model.ListTasksRequest;
 import com.amazonaws.services.ecs.model.ListTasksResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -66,14 +62,13 @@ public final class EcsApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonECS> clientWrapper = new AmazonClientHelper(credentials).getEcs(region)) {
-            final ListClustersResult result = clientWrapper.getClient().listClusters(
-                    new ListClustersRequest().withNextToken(page)
+        return EcsCaller.get(ListClustersRequest.class, ArnsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListClustersResult result = client.listClusters(
+                    request.withNextToken(page)
             );
-            return new ArnsResponse(result.getClusterArns(), result.getNextToken());
-        } catch (Throwable t) {
-            return new ArnsResponse(AmazonResponse.parse(t));
-        }
+            response.setArns(result.getClusterArns());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -86,12 +81,12 @@ public final class EcsApi {
             @Named("region") final String region,
             @Named("arn") final List<String> arns
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonECS> clientWrapper = new AmazonClientHelper(credentials).getEcs(region)) {
-            final DescribeClustersResult result = clientWrapper.getClient().describeClusters(new DescribeClustersRequest().withClusters(arns));
-            return new ClustersResponse(result.getClusters());
-        } catch (Throwable t) {
-            return new ClustersResponse(AmazonResponse.parse(t));
-        }
+        return EcsCaller.get(DescribeClustersRequest.class, ClustersResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeClustersResult result = client.describeClusters(
+                    request.withClusters(arns)
+            );
+            response.setClusters(result.getClusters());
+        });
     }
 
     @ApiMethod(
@@ -105,13 +100,13 @@ public final class EcsApi {
             @Named("clusterArn") final String clusterArn,
             @Named("arn") final List<String> arns
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonECS> clientWrapper = new AmazonClientHelper(credentials).getEcs(region)) {
-            final DescribeContainerInstancesResult result = clientWrapper.getClient()
-                    .describeContainerInstances(new DescribeContainerInstancesRequest().withCluster(clusterArn).withContainerInstances(arns));
-            return new ContainerInstancesResponse(result.getContainerInstances());
-        } catch (Throwable t) {
-            return new ContainerInstancesResponse(AmazonResponse.parse(t));
-        }
+        return EcsCaller.get(DescribeContainerInstancesRequest.class, ContainerInstancesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeContainerInstancesResult result = client.describeContainerInstances(
+                    request.withCluster(clusterArn)
+                            .withContainerInstances(arns)
+            );
+            response.setContainerInstances(result.getContainerInstances());
+        });
     }
 
     @ApiMethod(
@@ -125,16 +120,15 @@ public final class EcsApi {
             @Named("clusterArn") final String clusterArn,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonECS> clientWrapper = new AmazonClientHelper(credentials).getEcs(region)) {
-            final ListContainerInstancesResult result = clientWrapper.getClient().listContainerInstances(
-                    new ListContainerInstancesRequest()
+        return EcsCaller.get(ListContainerInstancesRequest.class, ArnsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListContainerInstancesResult result = client.listContainerInstances(
+                    request
                             .withCluster(clusterArn)
                             .withNextToken(page)
             );
-            return new ArnsResponse(result.getContainerInstanceArns(), result.getNextToken());
-        } catch (Throwable t) {
-            return new ArnsResponse(AmazonResponse.parse(t));
-        }
+            response.setArns(result.getContainerInstanceArns());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -148,16 +142,15 @@ public final class EcsApi {
             @Named("clusterArn") final String clusterArn,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonECS> clientWrapper = new AmazonClientHelper(credentials).getEcs(region)) {
-            final ListServicesResult result = clientWrapper.getClient().listServices(
-                    new ListServicesRequest()
+        return EcsCaller.get(ListServicesRequest.class, ArnsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListServicesResult result = client.listServices(
+                    request
                             .withCluster(clusterArn)
                             .withNextToken(page)
             );
-            return new ArnsResponse(result.getServiceArns(), result.getNextToken());
-        } catch (Throwable t) {
-            return new ArnsResponse(AmazonResponse.parse(t));
-        }
+            response.setArns(result.getServiceArns());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -171,12 +164,14 @@ public final class EcsApi {
             @Named("clusterArn") final String clusterArn,
             @Named("arn") final List<String> arns
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonECS> clientWrapper = new AmazonClientHelper(credentials).getEcs(region)) {
-            final DescribeServicesResult result = clientWrapper.getClient().describeServices(new DescribeServicesRequest().withCluster(clusterArn).withServices(arns));
-            return new ServicesResponse(result.getServices());
-        } catch (Throwable t) {
-            return new ServicesResponse(AmazonResponse.parse(t));
-        }
+        return EcsCaller.get(DescribeServicesRequest.class, ServicesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeServicesResult result = client.describeServices(
+                    request
+                            .withCluster(clusterArn)
+                            .withServices(arns)
+            );
+            response.setServices(result.getServices());
+        });
     }
 
     @ApiMethod(
@@ -190,16 +185,15 @@ public final class EcsApi {
             @Named("clusterArn") final String clusterArn,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonECS> clientWrapper = new AmazonClientHelper(credentials).getEcs(region)) {
-            final ListTasksResult result = clientWrapper.getClient().listTasks(
-                    new ListTasksRequest()
+        return EcsCaller.get(ListTasksRequest.class, ArnsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListTasksResult result = client.listTasks(
+                    request
                             .withCluster(clusterArn)
                             .withNextToken(page)
             );
-            return new ArnsResponse(result.getTaskArns(), result.getNextToken());
-        } catch (Throwable t) {
-            return new ArnsResponse(AmazonResponse.parse(t));
-        }
+            response.setArns(result.getTaskArns());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -213,12 +207,10 @@ public final class EcsApi {
             @Named("clusterArn") final String clusterArn,
             @Named("arn") final List<String> arns
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonECS> clientWrapper = new AmazonClientHelper(credentials).getEcs(region)) {
-            final DescribeTasksResult result = clientWrapper.getClient().describeTasks(new DescribeTasksRequest().withCluster(clusterArn).withTasks(arns));
-            return new TasksResponse(result.getTasks());
-        } catch (Throwable t) {
-            return new TasksResponse(AmazonResponse.parse(t));
-        }
+        return EcsCaller.get(DescribeTasksRequest.class, TasksResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeTasksResult result = client.describeTasks(request.withCluster(clusterArn).withTasks(arns));
+            response.setTasks(result.getTasks());
+        });
     }
 
     @ApiMethod(
@@ -231,15 +223,11 @@ public final class EcsApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonECS> clientWrapper = new AmazonClientHelper(credentials).getEcs(region)) {
-            final ListTaskDefinitionsResult result = clientWrapper.getClient().listTaskDefinitions(
-                    new ListTaskDefinitionsRequest()
-                            .withNextToken(page)
-            );
-            return new ArnsResponse(result.getTaskDefinitionArns(), result.getNextToken());
-        } catch (Throwable t) {
-            return new ArnsResponse(AmazonResponse.parse(t));
-        }
+        return EcsCaller.get(ListTaskDefinitionsRequest.class, ArnsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListTaskDefinitionsResult result = client.listTaskDefinitions(request.withNextToken(page));
+            response.setArns(result.getTaskDefinitionArns());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -252,11 +240,9 @@ public final class EcsApi {
             @Named("region") final String region,
             @Named("arn") final String arn
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonECS> clientWrapper = new AmazonClientHelper(credentials).getEcs(region)) {
-            final DescribeTaskDefinitionResult result = clientWrapper.getClient().describeTaskDefinition(new DescribeTaskDefinitionRequest().withTaskDefinition(arn));
-            return new TaskDefinitionResponse(result.getTaskDefinition());
-        } catch (Throwable t) {
-            return new TaskDefinitionResponse(AmazonResponse.parse(t));
-        }
+        return EcsCaller.get(DescribeTaskDefinitionRequest.class, TaskDefinitionResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeTaskDefinitionResult result = client.describeTaskDefinition(request.withTaskDefinition(arn));
+            response.setTaskDefinition(result.getTaskDefinition());
+        });
     }
 }

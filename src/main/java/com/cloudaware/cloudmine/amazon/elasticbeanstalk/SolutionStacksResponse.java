@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.elasticbeanstalk;
 
 import com.amazonaws.services.elasticbeanstalk.model.SolutionStackDescription;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class SolutionStacksResponse extends AmazonResponse {
     private List<SolutionStackDescription> solutionStacks;
-
-    public SolutionStacksResponse() {
-    }
-
-    public SolutionStacksResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public SolutionStacksResponse(final List<SolutionStackDescription> solutionStacks) {
-        this.solutionStacks = solutionStacks;
-    }
 
     public List<SolutionStackDescription> getSolutionStacks() {
         return solutionStacks;

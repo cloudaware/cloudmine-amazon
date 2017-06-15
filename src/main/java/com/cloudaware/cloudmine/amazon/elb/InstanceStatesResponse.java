@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.elb;
 
 import com.amazonaws.services.elasticloadbalancing.model.InstanceState;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class InstanceStatesResponse extends AmazonResponse {
     private List<InstanceState> instanceStates;
-
-    public InstanceStatesResponse() {
-    }
-
-    public InstanceStatesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public InstanceStatesResponse(final List<InstanceState> instanceStates) {
-        this.instanceStates = instanceStates;
-    }
 
     public List<InstanceState> getInstanceStates() {
         return instanceStates;

@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.kms;
 
 import com.amazonaws.services.kms.model.KeyListEntry;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class KeysResponse extends AmazonResponse {
     private List<KeyListEntry> keys;
-
-    public KeysResponse() {
-    }
-
-    public KeysResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public KeysResponse(final List<KeyListEntry> keys, final String nextPage) {
-        super(nextPage);
-        this.keys = keys;
-    }
 
     public List<KeyListEntry> getKeys() {
         return keys;

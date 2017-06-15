@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.ec2;
 
 import com.amazonaws.services.ec2.model.FlowLog;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -14,18 +13,6 @@ import java.util.List;
 public final class FlowLogsResponse extends AmazonResponse {
 
     private List<FlowLog> flowLogs;
-
-    public FlowLogsResponse() {
-    }
-
-    public FlowLogsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public FlowLogsResponse(final List<FlowLog> flowLogs, final String nextPage) {
-        super(nextPage);
-        this.flowLogs = flowLogs;
-    }
 
     public List<FlowLog> getFlowLogs() {
         return flowLogs;

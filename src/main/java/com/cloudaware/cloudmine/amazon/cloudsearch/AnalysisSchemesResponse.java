@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.cloudsearch;
 
 import com.amazonaws.services.cloudsearchv2.model.AnalysisSchemeStatus;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class AnalysisSchemesResponse extends AmazonResponse {
     private List<AnalysisSchemeStatus> analysisSchemes;
-
-    public AnalysisSchemesResponse() {
-    }
-
-    public AnalysisSchemesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public AnalysisSchemesResponse(final List<AnalysisSchemeStatus> analysisSchemes) {
-        this.analysisSchemes = analysisSchemes;
-    }
 
     public List<AnalysisSchemeStatus> getAnalysisSchemes() {
         return analysisSchemes;

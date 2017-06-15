@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.iam;
 
 import com.amazonaws.services.identitymanagement.model.PasswordPolicy;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -11,17 +10,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
  */
 public final class PasswordPolicyResponse extends AmazonResponse {
     private PasswordPolicy passwordPolicy;
-
-    public PasswordPolicyResponse() {
-    }
-
-    public PasswordPolicyResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public PasswordPolicyResponse(final PasswordPolicy passwordPolicy) {
-        this.passwordPolicy = passwordPolicy;
-    }
 
     public PasswordPolicy getPasswordPolicy() {
         return passwordPolicy;

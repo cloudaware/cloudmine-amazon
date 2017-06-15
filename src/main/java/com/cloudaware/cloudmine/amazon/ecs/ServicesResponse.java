@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.ecs;
 
 import com.amazonaws.services.ecs.model.Service;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class ServicesResponse extends AmazonResponse {
     private List<Service> services;
-
-    public ServicesResponse() {
-    }
-
-    public ServicesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public ServicesResponse(final List<Service> services) {
-        this.services = services;
-    }
 
     public List<Service> getServices() {
         return services;

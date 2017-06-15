@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.lambda;
 
 import com.amazonaws.services.lambda.model.FunctionConfiguration;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class FunctionsResponse extends AmazonResponse {
     private List<FunctionConfiguration> functions;
-
-    public FunctionsResponse() {
-    }
-
-    public FunctionsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public FunctionsResponse(final List<FunctionConfiguration> functions, final String nextPage) {
-        super(nextPage);
-        this.functions = functions;
-    }
 
     public List<FunctionConfiguration> getFunctions() {
         return functions;

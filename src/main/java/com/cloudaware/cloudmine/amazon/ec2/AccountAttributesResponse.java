@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.ec2;
 
 import com.amazonaws.services.ec2.model.AccountAttribute;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class AccountAttributesResponse extends AmazonResponse {
     private List<AccountAttribute> accountAttributes;
-
-    public AccountAttributesResponse() {
-    }
-
-    public AccountAttributesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public AccountAttributesResponse(final List<AccountAttribute> accountAttributes) {
-        this.accountAttributes = accountAttributes;
-    }
 
     public List<AccountAttribute> getAccountAttributes() {
         return accountAttributes;

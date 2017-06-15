@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.directconnect;
 
 import com.amazonaws.services.directconnect.model.Interconnect;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class InterconnectsResponse extends AmazonResponse {
     private List<Interconnect> interconnects;
-
-    public InterconnectsResponse() {
-    }
-
-    public InterconnectsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public InterconnectsResponse(final List<Interconnect> interconnects) {
-        this.interconnects = interconnects;
-    }
 
     public List<Interconnect> getInterconnects() {
         return interconnects;

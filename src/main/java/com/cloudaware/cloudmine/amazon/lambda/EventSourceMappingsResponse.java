@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.lambda;
 
 import com.amazonaws.services.lambda.model.EventSourceMappingConfiguration;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class EventSourceMappingsResponse extends AmazonResponse {
     private List<EventSourceMappingConfiguration> eventSourceMappings;
-
-    public EventSourceMappingsResponse() {
-    }
-
-    public EventSourceMappingsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public EventSourceMappingsResponse(final List<EventSourceMappingConfiguration> eventSourceMappings, final String nextPage) {
-        super(nextPage);
-        this.eventSourceMappings = eventSourceMappings;
-    }
 
     public List<EventSourceMappingConfiguration> getEventSourceMappings() {
         return eventSourceMappings;

@@ -1,11 +1,11 @@
 package com.cloudaware.cloudmine.amazon.emr;
 
-import com.amazonaws.services.elasticmapreduce.AmazonElasticMapReduce;
 import com.amazonaws.services.elasticmapreduce.model.AddJobFlowStepsRequest;
 import com.amazonaws.services.elasticmapreduce.model.AddJobFlowStepsResult;
-import com.amazonaws.services.elasticmapreduce.model.Cluster;
 import com.amazonaws.services.elasticmapreduce.model.DescribeClusterRequest;
+import com.amazonaws.services.elasticmapreduce.model.DescribeClusterResult;
 import com.amazonaws.services.elasticmapreduce.model.DescribeStepRequest;
+import com.amazonaws.services.elasticmapreduce.model.DescribeStepResult;
 import com.amazonaws.services.elasticmapreduce.model.ListBootstrapActionsRequest;
 import com.amazonaws.services.elasticmapreduce.model.ListBootstrapActionsResult;
 import com.amazonaws.services.elasticmapreduce.model.ListClustersRequest;
@@ -18,13 +18,9 @@ import com.amazonaws.services.elasticmapreduce.model.ListStepsRequest;
 import com.amazonaws.services.elasticmapreduce.model.ListStepsResult;
 import com.amazonaws.services.elasticmapreduce.model.RunJobFlowRequest;
 import com.amazonaws.services.elasticmapreduce.model.RunJobFlowResult;
-import com.amazonaws.services.elasticmapreduce.model.Step;
 import com.amazonaws.services.elasticmapreduce.model.TerminateJobFlowsRequest;
-import com.amazonaws.services.elasticmapreduce.model.TerminateJobFlowsResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -56,6 +52,7 @@ import java.util.List;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class EmrApi {
+
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
             name = "clusters.list",
@@ -66,15 +63,11 @@ public final class EmrApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElasticMapReduce> clientWrapper = new AmazonClientHelper(credentials).getEmr(region)) {
-            final ListClustersResult result = clientWrapper.getClient().listClusters(
-                    new ListClustersRequest()
-                            .withMarker(page)
-            );
-            return new ClustersResponse(result.getClusters(), result.getMarker());
-        } catch (Throwable t) {
-            return new ClustersResponse(AmazonResponse.parse(t));
-        }
+        return EmrCaller.get(ListClustersRequest.class, ClustersResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListClustersResult result = client.listClusters(request.withMarker(page));
+            response.setClusters(result.getClusters());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -87,12 +80,10 @@ public final class EmrApi {
             @Named("region") final String region,
             @Named("clusterId") final String clusterId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElasticMapReduce> clientWrapper = new AmazonClientHelper(credentials).getEmr(region)) {
-            final Cluster cluster = clientWrapper.getClient().describeCluster(new DescribeClusterRequest().withClusterId(clusterId)).getCluster();
-            return new ClusterResponse(cluster);
-        } catch (Throwable t) {
-            return new ClusterResponse(AmazonResponse.parse(t));
-        }
+        return EmrCaller.get(DescribeClusterRequest.class, ClusterResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeClusterResult result = client.describeCluster(request.withClusterId(clusterId));
+            response.setCluster(result.getCluster());
+        });
     }
 
     @ApiMethod(
@@ -106,16 +97,15 @@ public final class EmrApi {
             @Named("clusterId") final String clusterId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElasticMapReduce> clientWrapper = new AmazonClientHelper(credentials).getEmr(region)) {
-            final ListBootstrapActionsResult result = clientWrapper.getClient().listBootstrapActions(
-                    new ListBootstrapActionsRequest()
+        return EmrCaller.get(ListBootstrapActionsRequest.class, BootstrapActionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListBootstrapActionsResult result = client.listBootstrapActions(
+                    request
                             .withClusterId(clusterId)
                             .withMarker(page)
             );
-            return new BootstrapActionsResponse(result.getBootstrapActions(), result.getMarker());
-        } catch (Throwable t) {
-            return new BootstrapActionsResponse(AmazonResponse.parse(t));
-        }
+            response.setBootstrapActions(result.getBootstrapActions());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -129,16 +119,15 @@ public final class EmrApi {
             @Named("clusterId") final String clusterId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElasticMapReduce> clientWrapper = new AmazonClientHelper(credentials).getEmr(region)) {
-            final ListInstanceGroupsResult result = clientWrapper.getClient().listInstanceGroups(
-                    new ListInstanceGroupsRequest()
+        return EmrCaller.get(ListInstanceGroupsRequest.class, InstanceGroupsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListInstanceGroupsResult result = client.listInstanceGroups(
+                    request
                             .withClusterId(clusterId)
                             .withMarker(page)
             );
-            return new InstanceGroupsResponse(result.getInstanceGroups(), result.getMarker());
-        } catch (Throwable t) {
-            return new InstanceGroupsResponse(AmazonResponse.parse(t));
-        }
+            response.setInstanceGroups(result.getInstanceGroups());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -152,16 +141,15 @@ public final class EmrApi {
             @Named("clusterId") final String clusterId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElasticMapReduce> clientWrapper = new AmazonClientHelper(credentials).getEmr(region)) {
-            final ListInstancesResult result = clientWrapper.getClient().listInstances(
-                    new ListInstancesRequest()
+        return EmrCaller.get(ListInstancesRequest.class, InstancesResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListInstancesResult result = client.listInstances(
+                    request
                             .withClusterId(clusterId)
                             .withMarker(page)
             );
-            return new InstancesResponse(result.getInstances(), result.getMarker());
-        } catch (Throwable t) {
-            return new InstancesResponse(AmazonResponse.parse(t));
-        }
+            response.setInstances(result.getInstances());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -175,15 +163,15 @@ public final class EmrApi {
             @Named("clusterId") final String clusterId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElasticMapReduce> clientWrapper = new AmazonClientHelper(credentials).getEmr(region)) {
-            final ListStepsResult result = clientWrapper.getClient().listSteps(new ListStepsRequest()
-                    .withClusterId(clusterId)
-                    .withMarker(page)
+        return EmrCaller.get(ListStepsRequest.class, StepsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListStepsResult result = client.listSteps(
+                    request
+                            .withClusterId(clusterId)
+                            .withMarker(page)
             );
-            return new StepsResponse(result.getSteps(), result.getMarker());
-        } catch (Throwable t) {
-            return new StepsResponse(AmazonResponse.parse(t));
-        }
+            response.setSteps(result.getSteps());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -197,12 +185,14 @@ public final class EmrApi {
             @Named("clusterId") final String clusterId,
             @Named("stepId") final String stepId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElasticMapReduce> clientWrapper = new AmazonClientHelper(credentials).getEmr(region)) {
-            final Step step = clientWrapper.getClient().describeStep(new DescribeStepRequest().withClusterId(clusterId).withStepId(stepId)).getStep();
-            return new StepResponse(step);
-        } catch (Throwable t) {
-            return new StepResponse(AmazonResponse.parse(t));
-        }
+        return EmrCaller.get(DescribeStepRequest.class, StepResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeStepResult result = client.describeStep(
+                    request
+                            .withClusterId(clusterId)
+                            .withStepId(stepId)
+            );
+            response.setStep(result.getStep());
+        });
     }
 
     @ApiMethod(
@@ -215,8 +205,7 @@ public final class EmrApi {
             @Named("region") final String region,
             final JobFlowRunRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElasticMapReduce> clientWrapper = new AmazonClientHelper(credentials).getEmr(region)) {
-            final RunJobFlowRequest runJobFlowRequest = new RunJobFlowRequest();
+        return EmrCaller.get(RunJobFlowRequest.class, JobFlowRunResponse.class, credentials, region).execute((client, runJobFlowRequest, response) -> {
             runJobFlowRequest.setName(request.getName());
             runJobFlowRequest.setLogUri(request.getLogUri());
             runJobFlowRequest.setAdditionalInfo(request.getAdditionalInfo());
@@ -236,11 +225,9 @@ public final class EmrApi {
             runJobFlowRequest.setSecurityConfiguration(request.getSecurityConfiguration());
             runJobFlowRequest.setAutoScalingRole(request.getAutoScalingRole());
             runJobFlowRequest.setScaleDownBehavior(request.getScaleDownBehavior());
-            final RunJobFlowResult result = clientWrapper.getClient().runJobFlow(runJobFlowRequest);
-            return new JobFlowRunResponse(result.getJobFlowId());
-        } catch (Throwable t) {
-            return new JobFlowRunResponse(AmazonResponse.parse(t));
-        }
+            final RunJobFlowResult result = client.runJobFlow(runJobFlowRequest);
+            response.setJobFlowId(result.getJobFlowId());
+        });
     }
 
     @ApiMethod(
@@ -253,12 +240,9 @@ public final class EmrApi {
             @Named("region") final String region,
             @Named("jobFlowId") final List<String> jobFlowId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElasticMapReduce> clientWrapper = new AmazonClientHelper(credentials).getEmr(region)) {
-            final TerminateJobFlowsResult terminateJobFlowsResult = clientWrapper.getClient().terminateJobFlows(new TerminateJobFlowsRequest().withJobFlowIds(jobFlowId));
-            return new AmazonResponse();
-        } catch (Throwable t) {
-            return new AmazonResponse(AmazonResponse.parse(t));
-        }
+        return EmrCaller.get(TerminateJobFlowsRequest.class, AmazonResponse.class, credentials, region).execute((client, request, response) -> {
+            client.terminateJobFlows(request.withJobFlowIds(jobFlowId));
+        });
     }
 
     @ApiMethod(
@@ -272,12 +256,14 @@ public final class EmrApi {
             @Named("jobFlowId") final String jobFlowId,
             final StepsRequest steps
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElasticMapReduce> clientWrapper = new AmazonClientHelper(credentials).getEmr(region)) {
-            final AddJobFlowStepsResult addJobFlowStepsResult = clientWrapper.getClient().addJobFlowSteps(new AddJobFlowStepsRequest().withJobFlowId(jobFlowId).withSteps(steps.getStepConfigs()));
-            return new StepIdsResponse(addJobFlowStepsResult.getStepIds());
-        } catch (Throwable t) {
-            return new StepIdsResponse(AmazonResponse.parse(t));
-        }
+        return EmrCaller.get(AddJobFlowStepsRequest.class, StepIdsResponse.class, credentials, region).execute((client, request, response) -> {
+            final AddJobFlowStepsResult result = client.addJobFlowSteps(
+                    request
+                            .withJobFlowId(jobFlowId)
+                            .withSteps(steps.getStepConfigs())
+            );
+            response.setStepIds(result.getStepIds());
+        });
     }
 
 }

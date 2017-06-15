@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.sns;
 
 import com.amazonaws.services.sns.model.Subscription;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class SubscriptionsResponse extends AmazonResponse {
     private List<Subscription> subscriptions;
-
-    public SubscriptionsResponse() {
-    }
-
-    public SubscriptionsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public SubscriptionsResponse(final List<Subscription> subscriptions, final String nextPage) {
-        super(nextPage);
-        this.subscriptions = subscriptions;
-    }
 
     public List<Subscription> getSubscriptions() {
         return subscriptions;

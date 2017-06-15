@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.storagegateway;
 
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -11,18 +10,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
 public final class BandwidthRateLimitResponse extends AmazonResponse {
     private Long averageUploadRateLimitInBitsPerSec;
     private Long averageDownloadRateLimitInBitsPerSec;
-
-    public BandwidthRateLimitResponse() {
-    }
-
-    public BandwidthRateLimitResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public BandwidthRateLimitResponse(final Long averageUploadRateLimitInBitsPerSec, final Long averageDownloadRateLimitInBitsPerSec) {
-        this.averageUploadRateLimitInBitsPerSec = averageUploadRateLimitInBitsPerSec;
-        this.averageDownloadRateLimitInBitsPerSec = averageDownloadRateLimitInBitsPerSec;
-    }
 
     public Long getAverageUploadRateLimitInBitsPerSec() {
         return averageUploadRateLimitInBitsPerSec;

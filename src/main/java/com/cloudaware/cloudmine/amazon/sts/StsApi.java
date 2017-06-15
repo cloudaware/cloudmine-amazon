@@ -1,13 +1,9 @@
 package com.cloudaware.cloudmine.amazon.sts;
 
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -47,9 +43,10 @@ public final class StsApi {
             @Named("partition") final String partition,
             final AssumeRoleRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSSecurityTokenService> clientWrapper = new AmazonClientHelper(credentials).getSts(partition)) {
-            final AssumeRoleResult result = clientWrapper.getClient().assumeRole(
-                    new com.amazonaws.services.securitytoken.model.AssumeRoleRequest()
+        return StsCaller.get(com.amazonaws.services.securitytoken.model.AssumeRoleRequest.class, AssumeRoleResponse.class, credentials, partition)
+                .execute((client, assumeRoleRequest, response) -> {
+            final AssumeRoleResult result = client.assumeRole(
+                    assumeRoleRequest
                             .withDurationSeconds(request.getDurationSeconds())
                             .withExternalId(request.getExternalId())
                             .withPolicy(request.getPolicy())
@@ -58,10 +55,10 @@ public final class StsApi {
                             .withSerialNumber(request.getSerialNumber())
                             .withTokenCode(request.getTokenCode())
             );
-            return new AssumeRoleResponse(result.getCredentials(), result.getAssumedRoleUser(), result.getPackedPolicySize());
-        } catch (Throwable t) {
-            return new AssumeRoleResponse(AmazonResponse.parse(t));
-        }
+            response.setCredentials(result.getCredentials());
+            response.setAssumedRoleUser(result.getAssumedRoleUser());
+            response.setPackedPolicySize(result.getPackedPolicySize());
+        });
     }
 
     @ApiMethod(
@@ -73,11 +70,11 @@ public final class StsApi {
             @Named("credentials") final String credentials,
             @Named("partition") final String partition
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSSecurityTokenService> clientWrapper = new AmazonClientHelper(credentials).getSts(partition)) {
-            final GetCallerIdentityResult result = clientWrapper.getClient().getCallerIdentity(new GetCallerIdentityRequest());
-            return new CallerIdentityResponse(result.getUserId(), result.getAccount(), result.getArn());
-        } catch (Throwable t) {
-            return new CallerIdentityResponse(AmazonResponse.parse(t));
-        }
+        return StsCaller.get(GetCallerIdentityRequest.class, CallerIdentityResponse.class, credentials, partition).execute((client, request, response) -> {
+            final GetCallerIdentityResult result = client.getCallerIdentity(request);
+            response.setUserId(result.getUserId());
+            response.setAccount(result.getAccount());
+            response.setArn(result.getArn());
+        });
     }
 }

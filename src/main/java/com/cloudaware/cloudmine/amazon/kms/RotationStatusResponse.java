@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.kms;
 
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -10,17 +9,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
  */
 public final class RotationStatusResponse extends AmazonResponse {
     private Boolean keyRotationEnabled;
-
-    public RotationStatusResponse() {
-    }
-
-    public RotationStatusResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public RotationStatusResponse(final Boolean keyRotationEnabled) {
-        this.keyRotationEnabled = keyRotationEnabled;
-    }
 
     public Boolean getKeyRotationEnabled() {
         return keyRotationEnabled;

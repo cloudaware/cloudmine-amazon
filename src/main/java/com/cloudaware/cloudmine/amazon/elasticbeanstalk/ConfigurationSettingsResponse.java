@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.elasticbeanstalk;
 
 import com.amazonaws.services.elasticbeanstalk.model.ConfigurationSettingsDescription;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class ConfigurationSettingsResponse extends AmazonResponse {
     private List<ConfigurationSettingsDescription> configurationSettings;
-
-    public ConfigurationSettingsResponse() {
-    }
-
-    public ConfigurationSettingsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public ConfigurationSettingsResponse(final List<ConfigurationSettingsDescription> configurationSettings) {
-        this.configurationSettings = configurationSettings;
-    }
 
     public List<ConfigurationSettingsDescription> getConfigurationSettings() {
         return configurationSettings;

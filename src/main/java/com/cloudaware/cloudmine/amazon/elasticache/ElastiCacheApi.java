@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.elasticache;
 
-import com.amazonaws.services.elasticache.AmazonElastiCache;
 import com.amazonaws.services.elasticache.model.AddTagsToResourceRequest;
 import com.amazonaws.services.elasticache.model.DescribeCacheClustersRequest;
 import com.amazonaws.services.elasticache.model.DescribeCacheClustersResult;
@@ -22,10 +21,8 @@ import com.amazonaws.services.elasticache.model.ListTagsForResourceRequest;
 import com.amazonaws.services.elasticache.model.ListTagsForResourceResult;
 import com.amazonaws.services.elasticache.model.RemoveTagsFromResourceRequest;
 import com.amazonaws.services.elasticache.model.Tag;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -71,16 +68,15 @@ public final class ElastiCacheApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElastiCache> clientWrapper = new AmazonClientHelper(credentials).getElastiCache(region)) {
-            final DescribeCacheClustersResult result = clientWrapper.getClient().describeCacheClusters(
-                    new DescribeCacheClustersRequest()
+        return ElastiCacheCaller.get(DescribeCacheClustersRequest.class, CacheClustersResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeCacheClustersResult result = client.describeCacheClusters(
+                    request
                             .withShowCacheNodeInfo(true)
                             .withMarker(page)
             );
-            return new CacheClustersResponse(result.getCacheClusters(), result.getMarker());
-        } catch (Throwable t) {
-            return new CacheClustersResponse(AmazonResponse.parse(t));
-        }
+            response.setCacheClusters(result.getCacheClusters());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -93,15 +89,14 @@ public final class ElastiCacheApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElastiCache> clientWrapper = new AmazonClientHelper(credentials).getElastiCache(region)) {
-            final DescribeSnapshotsResult result = clientWrapper.getClient().describeSnapshots(
-                    new DescribeSnapshotsRequest()
+        return ElastiCacheCaller.get(DescribeSnapshotsRequest.class, SnapshotsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeSnapshotsResult result = client.describeSnapshots(
+                    request
                             .withMarker(page)
             );
-            return new SnapshotsResponse(result.getSnapshots(), result.getMarker());
-        } catch (Throwable t) {
-            return new SnapshotsResponse(AmazonResponse.parse(t));
-        }
+            response.setSnapshots(result.getSnapshots());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -114,15 +109,14 @@ public final class ElastiCacheApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElastiCache> clientWrapper = new AmazonClientHelper(credentials).getElastiCache(region)) {
-            final DescribeEventsResult result = clientWrapper.getClient().describeEvents(
-                    new DescribeEventsRequest()
+        return ElastiCacheCaller.get(DescribeEventsRequest.class, EventsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeEventsResult result = client.describeEvents(
+                    request
                             .withMarker(page)
             );
-            return new EventsResponse(result.getEvents(), result.getMarker());
-        } catch (Throwable t) {
-            return new EventsResponse(AmazonResponse.parse(t));
-        }
+            response.setEvents(result.getEvents());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -135,15 +129,14 @@ public final class ElastiCacheApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElastiCache> clientWrapper = new AmazonClientHelper(credentials).getElastiCache(region)) {
-            final DescribeCacheParameterGroupsResult result = clientWrapper.getClient().describeCacheParameterGroups(
-                    new DescribeCacheParameterGroupsRequest()
+        return ElastiCacheCaller.get(DescribeCacheParameterGroupsRequest.class, ParameterGroupsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeCacheParameterGroupsResult result = client.describeCacheParameterGroups(
+                    request
                             .withMarker(page)
             );
-            return new ParameterGroupsResponse(result.getCacheParameterGroups(), result.getMarker());
-        } catch (Throwable t) {
-            return new ParameterGroupsResponse(AmazonResponse.parse(t));
-        }
+            response.setParameterGroups(result.getCacheParameterGroups());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -156,15 +149,14 @@ public final class ElastiCacheApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElastiCache> clientWrapper = new AmazonClientHelper(credentials).getElastiCache(region)) {
-            final DescribeReplicationGroupsResult result = clientWrapper.getClient().describeReplicationGroups(
-                    new DescribeReplicationGroupsRequest()
+        return ElastiCacheCaller.get(DescribeReplicationGroupsRequest.class, ReplicationGroupsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeReplicationGroupsResult result = client.describeReplicationGroups(
+                    request
                             .withMarker(page)
             );
-            return new ReplicationGroupsResponse(result.getReplicationGroups(), result.getMarker());
-        } catch (Throwable t) {
-            return new ReplicationGroupsResponse(AmazonResponse.parse(t));
-        }
+            response.setReplicationGroups(result.getReplicationGroups());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -177,15 +169,14 @@ public final class ElastiCacheApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElastiCache> clientWrapper = new AmazonClientHelper(credentials).getElastiCache(region)) {
-            final DescribeReservedCacheNodesResult result = clientWrapper.getClient().describeReservedCacheNodes(
-                    new DescribeReservedCacheNodesRequest()
+        return ElastiCacheCaller.get(DescribeReservedCacheNodesRequest.class, ReservedNodesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeReservedCacheNodesResult result = client.describeReservedCacheNodes(
+                    request
                             .withMarker(page)
             );
-            return new ReservedNodesResponse(result.getReservedCacheNodes(), result.getMarker());
-        } catch (Throwable t) {
-            return new ReservedNodesResponse(AmazonResponse.parse(t));
-        }
+            response.setReservedNodes(result.getReservedCacheNodes());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -198,15 +189,14 @@ public final class ElastiCacheApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElastiCache> clientWrapper = new AmazonClientHelper(credentials).getElastiCache(region)) {
-            final DescribeCacheSecurityGroupsResult result = clientWrapper.getClient().describeCacheSecurityGroups(
-                    new DescribeCacheSecurityGroupsRequest()
+        return ElastiCacheCaller.get(DescribeCacheSecurityGroupsRequest.class, CacheSecurityGroupsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeCacheSecurityGroupsResult result = client.describeCacheSecurityGroups(
+                    request
                             .withMarker(page)
             );
-            return new CacheSecurityGroupsResponse(result.getCacheSecurityGroups(), result.getMarker());
-        } catch (Throwable t) {
-            return new CacheSecurityGroupsResponse(AmazonResponse.parse(t));
-        }
+            response.setCacheSecurityGroups(result.getCacheSecurityGroups());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -219,15 +209,14 @@ public final class ElastiCacheApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElastiCache> clientWrapper = new AmazonClientHelper(credentials).getElastiCache(region)) {
-            final DescribeCacheSubnetGroupsResult result = clientWrapper.getClient().describeCacheSubnetGroups(
-                    new DescribeCacheSubnetGroupsRequest()
+        return ElastiCacheCaller.get(DescribeCacheSubnetGroupsRequest.class, SubnetGroupsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeCacheSubnetGroupsResult result = client.describeCacheSubnetGroups(
+                    request
                             .withMarker(page)
             );
-            return new SubnetGroupsResponse(result.getCacheSubnetGroups(), result.getMarker());
-        } catch (Throwable t) {
-            return new SubnetGroupsResponse(AmazonResponse.parse(t));
-        }
+            response.setSubnetGroups(result.getCacheSubnetGroups());
+            response.setNextPage(result.getMarker());
+        });
     }
 
     @ApiMethod(
@@ -240,18 +229,17 @@ public final class ElastiCacheApi {
             @Named("region") final String region,
             @Named("arn") final String arn
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElastiCache> clientWrapper = new AmazonClientHelper(credentials).getElastiCache(region)) {
-            final ListTagsForResourceResult result = clientWrapper.getClient().listTagsForResource(new ListTagsForResourceRequest().withResourceName(arn));
+        return ElastiCacheCaller.get(ListTagsForResourceRequest.class, TagsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListTagsForResourceResult result = client.listTagsForResource(request.withResourceName(arn));
             final Map<String, String> out = Maps.newHashMap();
             if (result != null && result.getTagList().size() > 0) {
                 for (final Tag tag : result.getTagList()) {
                     out.put(tag.getKey(), tag.getValue());
                 }
             }
-            return new TagsResponse(out);
-        } catch (Throwable t) {
-            return new TagsResponse(AmazonResponse.parse(t));
-        }
+
+            response.setTags(out);
+        });
     }
 
     @ApiMethod(
@@ -264,9 +252,7 @@ public final class ElastiCacheApi {
             @Named("region") final String region,
             final TagsRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElastiCache> clientWrapper = new AmazonClientHelper(credentials).getElastiCache(region)) {
-            final AddTagsToResourceRequest addTagsToResourceRequest = new AddTagsToResourceRequest();
-            addTagsToResourceRequest.withResourceName(request.getArn());
+        return ElastiCacheCaller.get(AddTagsToResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, addTagsToResourceRequest, response) -> {
             final List<Tag> tags = Lists.newArrayList();
             for (final String key : request.getTags().keySet()) {
                 final Tag tag = new Tag();
@@ -274,12 +260,13 @@ public final class ElastiCacheApi {
                 tag.setValue(request.getTags().get(key));
                 tags.add(tag);
             }
-            addTagsToResourceRequest.withTags(tags);
-            clientWrapper.getClient().addTagsToResource(addTagsToResourceRequest);
-            return new AmazonResponse();
-        } catch (Throwable t) {
-            return new AmazonResponse(AmazonResponse.parse(t));
-        }
+
+            client.addTagsToResource(
+                    addTagsToResourceRequest
+                            .withResourceName(request.getArn())
+                            .withTags(tags)
+            );
+        });
     }
 
     @ApiMethod(
@@ -292,14 +279,12 @@ public final class ElastiCacheApi {
             @Named("region") final String region,
             final TagsRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonElastiCache> clientWrapper = new AmazonClientHelper(credentials).getElastiCache(region)) {
-            final RemoveTagsFromResourceRequest removeTagsFromResourceRequest = new RemoveTagsFromResourceRequest();
-            removeTagsFromResourceRequest.withResourceName(request.getArn());
-            removeTagsFromResourceRequest.withTagKeys(request.getTags().keySet());
-            clientWrapper.getClient().removeTagsFromResource(removeTagsFromResourceRequest);
-            return new AmazonResponse();
-        } catch (Throwable t) {
-            return new AmazonResponse(AmazonResponse.parse(t));
-        }
+        return ElastiCacheCaller.get(RemoveTagsFromResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, removeTagsFromResourceRequest, response) -> {
+            client.removeTagsFromResource(
+                    removeTagsFromResourceRequest
+                            .withResourceName(request.getArn())
+                            .withTagKeys(request.getTags().keySet())
+            );
+        });
     }
 }

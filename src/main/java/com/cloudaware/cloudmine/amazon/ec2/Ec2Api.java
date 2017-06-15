@@ -1,52 +1,68 @@
 package com.cloudaware.cloudmine.amazon.ec2;
 
-import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
+import com.amazonaws.services.ec2.model.CreateKeyPairResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DeleteTagsRequest;
+import com.amazonaws.services.ec2.model.DescribeAccountAttributesRequest;
 import com.amazonaws.services.ec2.model.DescribeAccountAttributesResult;
+import com.amazonaws.services.ec2.model.DescribeAddressesRequest;
 import com.amazonaws.services.ec2.model.DescribeAddressesResult;
+import com.amazonaws.services.ec2.model.DescribeDhcpOptionsRequest;
 import com.amazonaws.services.ec2.model.DescribeDhcpOptionsResult;
 import com.amazonaws.services.ec2.model.DescribeFlowLogsRequest;
 import com.amazonaws.services.ec2.model.DescribeFlowLogsResult;
 import com.amazonaws.services.ec2.model.DescribeImageAttributeRequest;
+import com.amazonaws.services.ec2.model.DescribeImageAttributeResult;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.DescribeInstanceAttributeRequest;
+import com.amazonaws.services.ec2.model.DescribeInstanceAttributeResult;
 import com.amazonaws.services.ec2.model.DescribeInstanceStatusRequest;
 import com.amazonaws.services.ec2.model.DescribeInstanceStatusResult;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.DescribeInternetGatewaysRequest;
 import com.amazonaws.services.ec2.model.DescribeInternetGatewaysResult;
 import com.amazonaws.services.ec2.model.DescribeKeyPairsRequest;
+import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
+import com.amazonaws.services.ec2.model.DescribeNetworkAclsRequest;
 import com.amazonaws.services.ec2.model.DescribeNetworkAclsResult;
+import com.amazonaws.services.ec2.model.DescribeNetworkInterfacesRequest;
 import com.amazonaws.services.ec2.model.DescribeNetworkInterfacesResult;
+import com.amazonaws.services.ec2.model.DescribePlacementGroupsRequest;
 import com.amazonaws.services.ec2.model.DescribePlacementGroupsResult;
+import com.amazonaws.services.ec2.model.DescribeReservedInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeReservedInstancesResult;
+import com.amazonaws.services.ec2.model.DescribeRouteTablesRequest;
 import com.amazonaws.services.ec2.model.DescribeRouteTablesResult;
+import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
 import com.amazonaws.services.ec2.model.DescribeSnapshotAttributeRequest;
 import com.amazonaws.services.ec2.model.DescribeSnapshotAttributeResult;
 import com.amazonaws.services.ec2.model.DescribeSnapshotsRequest;
 import com.amazonaws.services.ec2.model.DescribeSnapshotsResult;
+import com.amazonaws.services.ec2.model.DescribeSubnetsRequest;
 import com.amazonaws.services.ec2.model.DescribeSubnetsResult;
+import com.amazonaws.services.ec2.model.DescribeVolumeStatusRequest;
 import com.amazonaws.services.ec2.model.DescribeVolumeStatusResult;
 import com.amazonaws.services.ec2.model.DescribeVolumesRequest;
 import com.amazonaws.services.ec2.model.DescribeVolumesResult;
+import com.amazonaws.services.ec2.model.DescribeVpcsRequest;
 import com.amazonaws.services.ec2.model.DescribeVpcsResult;
+import com.amazonaws.services.ec2.model.DescribeVpnConnectionsRequest;
 import com.amazonaws.services.ec2.model.DescribeVpnConnectionsResult;
+import com.amazonaws.services.ec2.model.DescribeVpnGatewaysRequest;
 import com.amazonaws.services.ec2.model.DescribeVpnGatewaysResult;
-import com.amazonaws.services.ec2.model.ImageAttribute;
-import com.amazonaws.services.ec2.model.InstanceAttribute;
 import com.amazonaws.services.ec2.model.RebootInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.StartInstancesRequest;
+import com.amazonaws.services.ec2.model.StartInstancesResult;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
+import com.amazonaws.services.ec2.model.StopInstancesResult;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -78,6 +94,7 @@ import java.util.List;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class Ec2Api {
+
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
             name = "accountAttributes.list",
@@ -87,12 +104,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeAccountAttributesResult result = clientWrapper.getClient().describeAccountAttributes();
-            return new AccountAttributesResponse(result.getAccountAttributes());
-        } catch (Throwable t) {
-            return new AccountAttributesResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeAccountAttributesRequest.class, AccountAttributesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeAccountAttributesResult result = client.describeAccountAttributes(request);
+            response.setAccountAttributes(result.getAccountAttributes());
+        });
     }
 
     @ApiMethod(
@@ -104,12 +119,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeDhcpOptionsResult result = clientWrapper.getClient().describeDhcpOptions();
-            return new DhcpOptionsResponse(result.getDhcpOptions());
-        } catch (Throwable t) {
-            return new DhcpOptionsResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeDhcpOptionsRequest.class, DhcpOptionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeDhcpOptionsResult result = client.describeDhcpOptions(request);
+            response.setDhcpOptions(result.getDhcpOptions());
+        });
     }
 
     @ApiMethod(
@@ -121,12 +134,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeAddressesResult result = clientWrapper.getClient().describeAddresses();
-            return new ElasticIpsResponse(result.getAddresses());
-        } catch (Throwable t) {
-            return new ElasticIpsResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeAddressesRequest.class, ElasticIpsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeAddressesResult result = client.describeAddresses(request);
+            response.setElasticIps(result.getAddresses());
+        });
     }
 
     @ApiMethod(
@@ -139,15 +150,11 @@ public final class Ec2Api {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeFlowLogsResult result = clientWrapper.getClient().describeFlowLogs(
-                    new DescribeFlowLogsRequest()
-                            .withNextToken(page)
-            );
-            return new FlowLogsResponse(result.getFlowLogs(), result.getNextToken());
-        } catch (Throwable t) {
-            return new FlowLogsResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeFlowLogsRequest.class, FlowLogsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeFlowLogsResult result = client.describeFlowLogs(request.withNextToken(page));
+            response.setFlowLogs(result.getFlowLogs());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -160,12 +167,10 @@ public final class Ec2Api {
             @Named("region") final String region,
             @Named("owner") final String owner
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeImagesResult result = clientWrapper.getClient().describeImages(new DescribeImagesRequest().withOwners(owner));
-            return new ImagesResponse(result.getImages());
-        } catch (Throwable t) {
-            return new ImagesResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeImagesRequest.class, ImagesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeImagesResult result = client.describeImages(request.withOwners(owner));
+            response.setImages(result.getImages());
+        });
     }
 
     @ApiMethod(
@@ -179,12 +184,10 @@ public final class Ec2Api {
             @Named("imageId") final String imageId,
             @Named("attributeName") final String attributeName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final ImageAttribute imageAttribute = clientWrapper.getClient().describeImageAttribute(new DescribeImageAttributeRequest(imageId, attributeName)).getImageAttribute();
-            return new ImageAttributeResponse(imageAttribute);
-        } catch (Throwable t) {
-            return new ImageAttributeResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeImageAttributeRequest.class, ImageAttributeResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeImageAttributeResult result = client.describeImageAttribute(request.withImageId(imageId).withAttribute(attributeName));
+            response.setImageAttribute(result.getImageAttribute());
+        });
     }
 
     @ApiMethod(
@@ -198,12 +201,14 @@ public final class Ec2Api {
             @Named("instanceId") final String instanceId,
             @Named("attributeName") final String attributeName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final InstanceAttribute instanceAttribute = clientWrapper.getClient().describeInstanceAttribute(new DescribeInstanceAttributeRequest(instanceId, attributeName)).getInstanceAttribute();
-            return new InstanceAttributeResponse(instanceAttribute);
-        } catch (Throwable t) {
-            return new InstanceAttributeResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeInstanceAttributeRequest.class, InstanceAttributeResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeInstanceAttributeResult result = client.describeInstanceAttribute(
+                    request
+                            .withInstanceId(instanceId)
+                            .withAttribute(attributeName)
+            );
+            response.setInstanceAttribute(result.getInstanceAttribute());
+        });
     }
 
     @ApiMethod(
@@ -217,16 +222,15 @@ public final class Ec2Api {
             @Named("instanceId") @Nullable final List<String> instanceIds,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeInstancesResult result = clientWrapper.getClient().describeInstances(
-                    new DescribeInstancesRequest()
+        return Ec2Caller.get(DescribeInstancesRequest.class, InstancesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeInstancesResult result = client.describeInstances(
+                    request
                             .withInstanceIds(instanceIds)
                             .withNextToken(page)
             );
-            return new InstancesResponse(result.getReservations(), result.getNextToken());
-        } catch (Throwable t) {
-            return new InstancesResponse(AmazonResponse.parse(t));
-        }
+            response.setReservations(result.getReservations());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -239,8 +243,7 @@ public final class Ec2Api {
             @Named("region") final String region,
             final InstancesRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final RunInstancesRequest runInstancesRequest = new RunInstancesRequest();
+        return Ec2Caller.get(RunInstancesRequest.class, ReservationResponse.class, credentials, region).execute((client, runInstancesRequest, response) -> {
             runInstancesRequest.setImageId(request.getImageId());
             runInstancesRequest.setMinCount(request.getMinCount());
             runInstancesRequest.setMaxCount(request.getMaxCount());
@@ -265,11 +268,9 @@ public final class Ec2Api {
             runInstancesRequest.setNetworkInterfaces(request.getNetworkInterfaces());
             runInstancesRequest.setIamInstanceProfile(request.getIamInstanceProfile());
             runInstancesRequest.setEbsOptimized(request.getEbsOptimized());
-            final RunInstancesResult result = clientWrapper.getClient().runInstances(runInstancesRequest);
-            return new ReservationResponse(result.getReservation());
-        } catch (Throwable t) {
-            return new ReservationResponse(AmazonResponse.parse(t));
-        }
+            final RunInstancesResult result = client.runInstances(runInstancesRequest);
+            response.setReservation(result.getReservation());
+        });
     }
 
     @ApiMethod(
@@ -282,16 +283,13 @@ public final class Ec2Api {
             @Named("region") final String region,
             @Named("instanceId") final String instanceId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            return new InstanceStateChangeResponse(
-                    clientWrapper.getClient()
-                            .startInstances(new StartInstancesRequest().withInstanceIds(instanceId))
-                            .getStartingInstances()
-                            .get(0)
+        return Ec2Caller.get(StartInstancesRequest.class, InstanceStateChangeResponse.class, credentials, region).execute((client, request, response) -> {
+            final StartInstancesResult result = client.startInstances(
+                    request
+                            .withInstanceIds(instanceId)
             );
-        } catch (Throwable t) {
-            return new InstanceStateChangeResponse(AmazonResponse.parse(t));
-        }
+            response.setInstanceStateChange(result.getStartingInstances().get(0));
+        });
     }
 
     @ApiMethod(
@@ -304,16 +302,13 @@ public final class Ec2Api {
             @Named("region") final String region,
             @Named("instanceId") final String instanceId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            return new InstanceStateChangeResponse(
-                    clientWrapper.getClient()
-                            .stopInstances(new StopInstancesRequest().withInstanceIds(instanceId))
-                            .getStoppingInstances()
-                            .get(0)
+        return Ec2Caller.get(StopInstancesRequest.class, InstanceStateChangeResponse.class, credentials, region).execute((client, request, response) -> {
+            final StopInstancesResult result = client.stopInstances(
+                    request
+                            .withInstanceIds(instanceId)
             );
-        } catch (Throwable t) {
-            return new InstanceStateChangeResponse(AmazonResponse.parse(t));
-        }
+            response.setInstanceStateChange(result.getStoppingInstances().get(0));
+        });
     }
 
     @ApiMethod(
@@ -326,12 +321,9 @@ public final class Ec2Api {
             @Named("region") final String region,
             @Named("instanceId") final String instanceId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            clientWrapper.getClient().rebootInstances(new RebootInstancesRequest().withInstanceIds(instanceId));
-            return new AmazonResponse();
-        } catch (Throwable t) {
-            return new AmazonResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(RebootInstancesRequest.class, AmazonResponse.class, credentials, region).execute((client, request, response) -> {
+            client.rebootInstances(request.withInstanceIds(instanceId));
+        });
     }
 
     @ApiMethod(
@@ -344,15 +336,11 @@ public final class Ec2Api {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeInstanceStatusResult result = clientWrapper.getClient().describeInstanceStatus(
-                    new DescribeInstanceStatusRequest()
-                            .withNextToken(page)
-            );
-            return new InstanceStatusesResponse(result.getInstanceStatuses(), result.getNextToken());
-        } catch (Throwable t) {
-            return new InstanceStatusesResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeInstanceStatusRequest.class, InstanceStatusesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeInstanceStatusResult result = client.describeInstanceStatus(request.withNextToken(page));
+            response.setInstanceStatuses(result.getInstanceStatuses());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -364,12 +352,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeInternetGatewaysResult result = clientWrapper.getClient().describeInternetGateways();
-            return new InternetGatewaysResponse(result.getInternetGateways());
-        } catch (Throwable t) {
-            return new InternetGatewaysResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeInternetGatewaysRequest.class, InternetGatewaysResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeInternetGatewaysResult result = client.describeInternetGateways(request);
+            response.setInternetGateways(result.getInternetGateways());
+        });
     }
 
     @ApiMethod(
@@ -382,15 +368,10 @@ public final class Ec2Api {
             @Named("region") final String region,
             @Named("keyName") @Nullable final List<String> keyNames
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            return new KeyPairsResponse(
-                    clientWrapper.getClient()
-                            .describeKeyPairs(new DescribeKeyPairsRequest().withKeyNames(keyNames))
-                            .getKeyPairs()
-            );
-        } catch (Throwable t) {
-            return new KeyPairsResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeKeyPairsRequest.class, KeyPairsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeKeyPairsResult result = client.describeKeyPairs(request.withKeyNames(keyNames));
+            response.setKeyPairs(result.getKeyPairs());
+        });
     }
 
     @ApiMethod(
@@ -403,11 +384,10 @@ public final class Ec2Api {
             @Named("region") final String region,
             @Named("keyName") final String keyName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            return new KeyPairResponse(clientWrapper.getClient().createKeyPair(new CreateKeyPairRequest().withKeyName(keyName)).getKeyPair());
-        } catch (Throwable t) {
-            return new KeyPairResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(CreateKeyPairRequest.class, KeyPairResponse.class, credentials, region).execute((client, request, response) -> {
+            final CreateKeyPairResult result = client.createKeyPair(request.withKeyName(keyName));
+            response.setKeyPair(result.getKeyPair());
+        });
     }
 
     @ApiMethod(
@@ -419,12 +399,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeNetworkAclsResult result = clientWrapper.getClient().describeNetworkAcls();
-            return new NetworkAclsResponse(result.getNetworkAcls());
-        } catch (Throwable t) {
-            return new NetworkAclsResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeNetworkAclsRequest.class, NetworkAclsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeNetworkAclsResult result = client.describeNetworkAcls(request);
+            response.setNetworkAcls(result.getNetworkAcls());
+        });
     }
 
     @ApiMethod(
@@ -436,12 +414,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeNetworkInterfacesResult result = clientWrapper.getClient().describeNetworkInterfaces();
-            return new NetworkInterfacesResponse(result.getNetworkInterfaces());
-        } catch (Throwable t) {
-            return new NetworkInterfacesResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeNetworkInterfacesRequest.class, NetworkInterfacesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeNetworkInterfacesResult result = client.describeNetworkInterfaces(request);
+            response.setNetworkInterfaces(result.getNetworkInterfaces());
+        });
     }
 
     @ApiMethod(
@@ -453,12 +429,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribePlacementGroupsResult result = clientWrapper.getClient().describePlacementGroups();
-            return new PlacementGroupsResponse(result.getPlacementGroups());
-        } catch (Throwable t) {
-            return new PlacementGroupsResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribePlacementGroupsRequest.class, PlacementGroupsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribePlacementGroupsResult result = client.describePlacementGroups(request);
+            response.setPlacementGroups(result.getPlacementGroups());
+        });
     }
 
     @ApiMethod(
@@ -470,12 +444,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeReservedInstancesResult result = clientWrapper.getClient().describeReservedInstances();
-            return new ReservedInstancesResponse(result.getReservedInstances());
-        } catch (Throwable t) {
-            return new ReservedInstancesResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeReservedInstancesRequest.class, ReservedInstancesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeReservedInstancesResult result = client.describeReservedInstances(request);
+            response.setReservedInstances(result.getReservedInstances());
+        });
     }
 
     @ApiMethod(
@@ -487,12 +459,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeRouteTablesResult result = clientWrapper.getClient().describeRouteTables();
-            return new RouteTablesResponse(result.getRouteTables());
-        } catch (Throwable t) {
-            return new RouteTablesResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeRouteTablesRequest.class, RouteTablesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeRouteTablesResult result = client.describeRouteTables(request);
+            response.setRouteTables(result.getRouteTables());
+        });
     }
 
     @ApiMethod(
@@ -504,12 +474,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeSecurityGroupsResult result = clientWrapper.getClient().describeSecurityGroups();
-            return new SecurityGroupsResponse(result.getSecurityGroups());
-        } catch (Throwable t) {
-            return new SecurityGroupsResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeSecurityGroupsRequest.class, SecurityGroupsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeSecurityGroupsResult result = client.describeSecurityGroups(request);
+            response.setSecurityGroups(result.getSecurityGroups());
+        });
     }
 
     @ApiMethod(
@@ -523,16 +491,15 @@ public final class Ec2Api {
             @Named("owner") final String owner,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeSnapshotsResult result = clientWrapper.getClient().describeSnapshots(
-                    new DescribeSnapshotsRequest()
+        return Ec2Caller.get(DescribeSnapshotsRequest.class, SnapshotsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeSnapshotsResult result = client.describeSnapshots(
+                    request
                             .withOwnerIds(owner)
                             .withNextToken(page)
             );
-            return new SnapshotsResponse(result.getSnapshots(), result.getNextToken());
-        } catch (Throwable t) {
-            return new SnapshotsResponse(AmazonResponse.parse(t));
-        }
+            response.setSnapshots(result.getSnapshots());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -544,12 +511,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeSubnetsResult result = clientWrapper.getClient().describeSubnets();
-            return new SubnetsResponse(result.getSubnets());
-        } catch (Throwable t) {
-            return new SubnetsResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeSubnetsRequest.class, SubnetsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeSubnetsResult result = client.describeSubnets(request);
+            response.setSubnets(result.getSubnets());
+        });
     }
 
     @ApiMethod(
@@ -563,12 +528,10 @@ public final class Ec2Api {
             @Named("snapshotId") final String snapshotId,
             @Named("attributeName") final String attributeName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeSnapshotAttributeResult result = clientWrapper.getClient().describeSnapshotAttribute(new DescribeSnapshotAttributeRequest(snapshotId, attributeName));
-            return new SnapshotAttributeResponse(result.getCreateVolumePermissions());
-        } catch (Throwable t) {
-            return new SnapshotAttributeResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeSnapshotAttributeRequest.class, SnapshotAttributeResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeSnapshotAttributeResult result = client.describeSnapshotAttribute(request.withSnapshotId(snapshotId).withAttribute(attributeName));
+            response.setCreateVolumePermissions(result.getCreateVolumePermissions());
+        });
     }
 
     @ApiMethod(
@@ -581,15 +544,11 @@ public final class Ec2Api {
             @Named("region") final String region,
             final TagsRequest tagsRequest
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final CreateTagsRequest req = new CreateTagsRequest();
-            req.withResources(tagsRequest.getResources());
-            req.withTags(tagsRequest.getTags());
-            clientWrapper.getClient().createTags(req);
-            return new AmazonResponse();
-        } catch (Throwable t) {
-            return new AmazonResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(CreateTagsRequest.class, AmazonResponse.class, credentials, region).execute((client, request, response) -> {
+            request.withResources(tagsRequest.getResources());
+            request.withTags(tagsRequest.getTags());
+            client.createTags(request);
+        });
     }
 
     @ApiMethod(
@@ -602,15 +561,11 @@ public final class Ec2Api {
             @Named("region") final String region,
             final TagsRequest tagsRequest
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DeleteTagsRequest req = new DeleteTagsRequest();
-            req.withResources(tagsRequest.getResources());
-            req.withTags(tagsRequest.getTags());
-            clientWrapper.getClient().deleteTags(req);
-            return new AmazonResponse();
-        } catch (Throwable t) {
-            return new AmazonResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DeleteTagsRequest.class, AmazonResponse.class, credentials, region).execute((client, request, response) -> {
+            request.withResources(tagsRequest.getResources());
+            request.withTags(tagsRequest.getTags());
+            client.deleteTags(request);
+        });
     }
 
     @ApiMethod(
@@ -623,15 +578,11 @@ public final class Ec2Api {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeVolumesResult result = clientWrapper.getClient().describeVolumes(
-                    new DescribeVolumesRequest()
-                            .withNextToken(page)
-            );
-            return new VolumesResponse(result.getVolumes(), result.getNextToken());
-        } catch (Throwable t) {
-            return new VolumesResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeVolumesRequest.class, VolumesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVolumesResult result = client.describeVolumes(request.withNextToken(page));
+            response.setVolumes(result.getVolumes());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -644,12 +595,11 @@ public final class Ec2Api {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeVolumeStatusResult result = clientWrapper.getClient().describeVolumeStatus();
-            return new VolumeStatusesResponse(result.getVolumeStatuses());
-        } catch (Throwable t) {
-            return new VolumeStatusesResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeVolumeStatusRequest.class, VolumeStatusesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVolumeStatusResult result = client.describeVolumeStatus(request.withNextToken(page));
+            response.setVolumeStatuses(result.getVolumeStatuses());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -661,12 +611,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeVpcsResult result = clientWrapper.getClient().describeVpcs();
-            return new VpcsResponse(result.getVpcs());
-        } catch (Throwable t) {
-            return new VpcsResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeVpcsRequest.class, VpcsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpcsResult result = client.describeVpcs(request);
+            response.setVpcs(result.getVpcs());
+        });
     }
 
     @ApiMethod(
@@ -678,12 +626,10 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeVpnConnectionsResult result = clientWrapper.getClient().describeVpnConnections();
-            return new VpnConnectionsResponse(result.getVpnConnections());
-        } catch (Throwable t) {
-            return new VpnConnectionsResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeVpnConnectionsRequest.class, VpnConnectionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpnConnectionsResult result = client.describeVpnConnections(request);
+            response.setVpnConnections(result.getVpnConnections());
+        });
     }
 
     @ApiMethod(
@@ -695,11 +641,9 @@ public final class Ec2Api {
             @Named("credentials") final String credentials,
             @Named("region") final String region
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonEC2> clientWrapper = new AmazonClientHelper(credentials).getEc2(region)) {
-            final DescribeVpnGatewaysResult result = clientWrapper.getClient().describeVpnGateways();
-            return new VpnGatewaysResponse(result.getVpnGateways());
-        } catch (Throwable t) {
-            return new VpnGatewaysResponse(AmazonResponse.parse(t));
-        }
+        return Ec2Caller.get(DescribeVpnGatewaysRequest.class, VpnGatewaysResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpnGatewaysResult result = client.describeVpnGateways(request);
+            response.setVpnGateways(result.getVpnGateways());
+        });
     }
 }

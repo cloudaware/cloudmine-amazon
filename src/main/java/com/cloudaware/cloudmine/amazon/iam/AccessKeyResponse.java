@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.iam;
 
 import com.amazonaws.services.identitymanagement.model.AccessKey;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -11,17 +10,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
  */
 public final class AccessKeyResponse extends AmazonResponse {
     private AccessKey accessKey;
-
-    public AccessKeyResponse() {
-    }
-
-    public AccessKeyResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public AccessKeyResponse(final AccessKey accessKey) {
-        this.accessKey = accessKey;
-    }
 
     public AccessKey getAccessKey() {
         return accessKey;

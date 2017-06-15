@@ -14,9 +14,6 @@ import java.util.List;
 public final class TagsResponse extends AmazonResponse {
     private List<TagSet> tags;
 
-    public TagsResponse() {
-    }
-
     public TagsResponse(final AmazonException exception) {
         super(exception);
     }

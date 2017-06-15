@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.rds;
 
 import com.amazonaws.services.rds.model.DBSnapshot;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class DbSnapshotsResponse extends AmazonResponse {
     private List<DBSnapshot> dbSnapshots;
-
-    public DbSnapshotsResponse() {
-    }
-
-    public DbSnapshotsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public DbSnapshotsResponse(final List<DBSnapshot> dbSnapshots, final String nextPage) {
-        super(nextPage);
-        this.dbSnapshots = dbSnapshots;
-    }
 
     public List<DBSnapshot> getDbSnapshots() {
         return dbSnapshots;

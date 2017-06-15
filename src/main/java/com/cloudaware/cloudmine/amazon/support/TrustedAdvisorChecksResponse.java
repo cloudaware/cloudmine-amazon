@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.support;
 
 import com.amazonaws.services.support.model.TrustedAdvisorCheckDescription;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class TrustedAdvisorChecksResponse extends AmazonResponse {
     private List<TrustedAdvisorCheckDescription> trustedAdvisorChecks;
-
-    public TrustedAdvisorChecksResponse() {
-    }
-
-    public TrustedAdvisorChecksResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public TrustedAdvisorChecksResponse(final List<TrustedAdvisorCheckDescription> trustedAdvisorChecks) {
-        this.trustedAdvisorChecks = trustedAdvisorChecks;
-    }
 
     public List<TrustedAdvisorCheckDescription> getTrustedAdvisorChecks() {
         return trustedAdvisorChecks;

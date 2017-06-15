@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.iam;
 
 import com.amazonaws.services.identitymanagement.model.AttachedPolicy;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class AttachedPoliciesResponse extends AmazonResponse {
     private List<AttachedPolicy> attachedPolicies;
-
-    public AttachedPoliciesResponse() {
-    }
-
-    public AttachedPoliciesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public AttachedPoliciesResponse(final List<AttachedPolicy> attachedPolicies, final String nextPage) {
-        super(nextPage);
-        this.attachedPolicies = attachedPolicies;
-    }
 
     public List<AttachedPolicy> getAttachedPolicies() {
         return attachedPolicies;

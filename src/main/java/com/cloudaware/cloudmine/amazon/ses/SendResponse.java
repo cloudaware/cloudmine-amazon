@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.ses;
 
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -10,17 +9,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
  */
 public final class SendResponse extends AmazonResponse {
     private String messageId;
-
-    public SendResponse() {
-    }
-
-    public SendResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public SendResponse(final String messageId) {
-        this.messageId = messageId;
-    }
 
     public String getMessageId() {
         return messageId;

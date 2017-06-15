@@ -1,22 +1,20 @@
 package com.cloudaware.cloudmine.amazon.cloudformation;
 
-import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import com.amazonaws.services.cloudformation.model.CreateStackRequest;
 import com.amazonaws.services.cloudformation.model.CreateStackResult;
 import com.amazonaws.services.cloudformation.model.DeleteStackRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStackEventsRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStackEventsResult;
 import com.amazonaws.services.cloudformation.model.DescribeStackResourceRequest;
+import com.amazonaws.services.cloudformation.model.DescribeStackResourceResult;
 import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
 import com.amazonaws.services.cloudformation.model.GetTemplateRequest;
 import com.amazonaws.services.cloudformation.model.GetTemplateResult;
 import com.amazonaws.services.cloudformation.model.ListStackResourcesRequest;
 import com.amazonaws.services.cloudformation.model.ListStackResourcesResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -24,8 +22,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -52,6 +48,7 @@ import java.util.Map;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class CloudFormationApi {
+
     private static List<com.amazonaws.services.cloudformation.model.Tag> reconvertTagsCf(final Map<String, String> tags) {
         final List<com.amazonaws.services.cloudformation.model.Tag> out = Lists.newArrayList();
         if (tags == null) {
@@ -77,16 +74,15 @@ public final class CloudFormationApi {
             @Named("stackName") @Nullable final String stackName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFormation> clientWrapper = new AmazonClientHelper(credentials).getCloudFormation(region)) {
-            final DescribeStacksResult response = clientWrapper.getClient().describeStacks(
-                    new DescribeStacksRequest()
+        return CloudFormationCaller.get(DescribeStacksRequest.class, StacksResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeStacksResult result = client.describeStacks(
+                    request
                             .withStackName(stackName)
                             .withNextToken(page)
             );
-            return new StacksResponse(response.getStacks(), response.getNextToken());
-        } catch (Throwable t) {
-            return new StacksResponse(AmazonResponse.parse(t));
-        }
+            response.setStacks(result.getStacks());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -99,12 +95,10 @@ public final class CloudFormationApi {
             @Named("region") final String region,
             @Named("stackName") final String stackName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFormation> clientWrapper = new AmazonClientHelper(credentials).getCloudFormation(region)) {
-            final GetTemplateResult response = clientWrapper.getClient().getTemplate(new GetTemplateRequest().withStackName(stackName));
-            return new StackTemplateResponse(response.getTemplateBody());
-        } catch (Throwable t) {
-            return new StackTemplateResponse(AmazonResponse.parse(t));
-        }
+        return CloudFormationCaller.get(GetTemplateRequest.class, StackTemplateResponse.class, credentials, region).execute((client, request, response) -> {
+            final GetTemplateResult result = client.getTemplate(request.withStackName(stackName));
+            response.setTemplateBody(result.getTemplateBody());
+        });
     }
 
     @ApiMethod(
@@ -112,10 +106,12 @@ public final class CloudFormationApi {
             name = "stacks.create",
             path = "{region}/stacks"
     )
-    public StackIdResponse stacksCreate(@Named("credentials") final String credentials, @Named("region") final String region, final StackRequest stackRequest) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFormation> clientWrapper = new AmazonClientHelper(credentials).getCloudFormation(region)) {
-            Preconditions.checkNotNull(stackRequest);
-            final CreateStackRequest request = new CreateStackRequest();
+    public StackIdResponse stacksCreate(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            final StackRequest stackRequest
+    ) throws AmazonUnparsedException {
+        return CloudFormationCaller.get(CreateStackRequest.class, StackIdResponse.class, credentials, region).execute((client, request, response) -> {
             request.withCapabilities(stackRequest.getCapabilities());
             request.withDisableRollback(stackRequest.getDisableRollback());
             request.withNotificationARNs(stackRequest.getNotificationArns());
@@ -126,11 +122,9 @@ public final class CloudFormationApi {
             request.withTemplateBody(stackRequest.getTemplateBody());
             request.withTemplateURL(stackRequest.getTemplateUrl());
             request.withTimeoutInMinutes(stackRequest.getTimeoutInMinutes());
-            final CreateStackResult result = clientWrapper.getClient().createStack(request);
-            return new StackIdResponse(result.getStackId());
-        } catch (Throwable t) {
-            return new StackIdResponse(AmazonResponse.parse(t));
-        }
+            final CreateStackResult result = client.createStack(request);
+            response.setStackId(result.getStackId());
+        });
     }
 
     @ApiMethod(
@@ -143,15 +137,9 @@ public final class CloudFormationApi {
             @Named("region") final String region,
             @Named("stackName") final String stackName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFormation> clientWrapper = new AmazonClientHelper(credentials).getCloudFormation(region)) {
-            if (Strings.isNullOrEmpty(stackName)) {
-                throw new IllegalArgumentException("You need to set Stack Name property");
-            }
-            clientWrapper.getClient().deleteStack(new DeleteStackRequest().withStackName(stackName));
-            return new AmazonResponse();
-        } catch (Throwable t) {
-            return new AmazonResponse(AmazonResponse.parse(t));
-        }
+        return CloudFormationCaller.get(DeleteStackRequest.class, AmazonResponse.class, credentials, region).execute((client, request, response) -> {
+            client.deleteStack(request.withStackName(stackName));
+        });
     }
 
     @ApiMethod(
@@ -165,16 +153,15 @@ public final class CloudFormationApi {
             @Named("stackName") final String stackName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFormation> clientWrapper = new AmazonClientHelper(credentials).getCloudFormation(region)) {
-            final DescribeStackEventsResult response = clientWrapper.getClient().describeStackEvents(
-                    new DescribeStackEventsRequest()
+        return CloudFormationCaller.get(DescribeStackEventsRequest.class, StackEventsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeStackEventsResult result = client.describeStackEvents(
+                    request
                             .withStackName(stackName)
                             .withNextToken(page)
             );
-            return new StackEventsResponse(response.getStackEvents(), response.getNextToken());
-        } catch (Throwable t) {
-            return new StackEventsResponse(AmazonResponse.parse(t));
-        }
+            response.setStackEvents(result.getStackEvents());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -188,16 +175,15 @@ public final class CloudFormationApi {
             @Named("stackName") final String stackName,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFormation> clientWrapper = new AmazonClientHelper(credentials).getCloudFormation(region)) {
-            final ListStackResourcesResult result = clientWrapper.getClient().listStackResources(
-                    new ListStackResourcesRequest()
+        return CloudFormationCaller.get(ListStackResourcesRequest.class, StackResourcesResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListStackResourcesResult result = client.listStackResources(
+                    request
                             .withStackName(stackName)
                             .withNextToken(page)
             );
-            return new StackResourcesResponse(result.getStackResourceSummaries(), result.getNextToken());
-        } catch (Throwable t) {
-            return new StackResourcesResponse(AmazonResponse.parse(t));
-        }
+            response.setStackResources(result.getStackResourceSummaries());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -211,11 +197,13 @@ public final class CloudFormationApi {
             @Named("stackName") final String stackName,
             @Named("logicalResourceId") final String logicalResourceId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFormation> clientWrapper = new AmazonClientHelper(credentials).getCloudFormation(region)) {
-            final DescribeStackResourceRequest request = new DescribeStackResourceRequest().withStackName(stackName).withLogicalResourceId(logicalResourceId);
-            return new StackResourceResponse(clientWrapper.getClient().describeStackResource(request).getStackResourceDetail());
-        } catch (Throwable t) {
-            return new StackResourceResponse(AmazonResponse.parse(t));
-        }
+        return CloudFormationCaller.get(DescribeStackResourceRequest.class, StackResourceResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeStackResourceResult result = client.describeStackResource(
+                    request
+                            .withStackName(stackName)
+                            .withLogicalResourceId(logicalResourceId)
+            );
+            response.setStackResource(result.getStackResourceDetail());
+        });
     }
 }

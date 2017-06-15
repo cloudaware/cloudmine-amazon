@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.lambda;
 
 import com.amazonaws.services.lambda.model.AliasConfiguration;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class AliasesResponse extends AmazonResponse {
     private List<AliasConfiguration> aliases;
-
-    public AliasesResponse() {
-    }
-
-    public AliasesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public AliasesResponse(final List<AliasConfiguration> aliases, final String nextPage) {
-        super(nextPage);
-        this.aliases = aliases;
-    }
 
     public List<AliasConfiguration> getAliases() {
         return aliases;

@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.cloudfront;
 
-import com.amazonaws.services.cloudfront.AmazonCloudFront;
 import com.amazonaws.services.cloudfront.model.GetCloudFrontOriginAccessIdentityRequest;
 import com.amazonaws.services.cloudfront.model.GetCloudFrontOriginAccessIdentityResult;
 import com.amazonaws.services.cloudfront.model.GetDistributionRequest;
@@ -17,10 +16,7 @@ import com.amazonaws.services.cloudfront.model.ListInvalidationsRequest;
 import com.amazonaws.services.cloudfront.model.ListInvalidationsResult;
 import com.amazonaws.services.cloudfront.model.ListStreamingDistributionsRequest;
 import com.amazonaws.services.cloudfront.model.ListStreamingDistributionsResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -50,6 +46,7 @@ import com.google.api.server.spi.config.Nullable;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class CloudFrontApi {
+
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
             name = "distributions.list",
@@ -59,15 +56,14 @@ public final class CloudFrontApi {
             @Named("credentials") final String credentials,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFront> clientWrapper = new AmazonClientHelper(credentials).getCloudFront()) {
-            final ListDistributionsResult result = clientWrapper.getClient().listDistributions(
-                    new ListDistributionsRequest()
+        return CloudFrontCaller.get(ListDistributionsRequest.class, DistributionsResponse.class, credentials).execute((client, request, response) -> {
+            final ListDistributionsResult result = client.listDistributions(
+                    request
                             .withMarker(page)
             );
-            return new DistributionsResponse(result.getDistributionList().getItems(), result.getDistributionList().getNextMarker());
-        } catch (Throwable t) {
-            return new DistributionsResponse(AmazonResponse.parse(t));
-        }
+            response.setDistributions(result.getDistributionList().getItems());
+            response.setNextPage(result.getDistributionList().getNextMarker());
+        });
     }
 
     @ApiMethod(
@@ -79,12 +75,10 @@ public final class CloudFrontApi {
             @Named("credentials") final String credentials,
             @Named("id") final String id
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFront> clientWrapper = new AmazonClientHelper(credentials).getCloudFront()) {
-            final GetDistributionResult result = clientWrapper.getClient().getDistribution(new GetDistributionRequest(id));
-            return new DistributionResponse(result.getDistribution());
-        } catch (Throwable t) {
-            return new DistributionResponse(AmazonResponse.parse(t));
-        }
+        return CloudFrontCaller.get(GetDistributionRequest.class, DistributionResponse.class, credentials).execute((client, request, response) -> {
+            final GetDistributionResult result = client.getDistribution(request.withId(id));
+            response.setDistribution(result.getDistribution());
+        });
     }
 
     @ApiMethod(
@@ -96,15 +90,11 @@ public final class CloudFrontApi {
             @Named("credentials") final String credentials,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFront> clientWrapper = new AmazonClientHelper(credentials).getCloudFront()) {
-            final ListStreamingDistributionsResult result = clientWrapper.getClient().listStreamingDistributions(
-                    new ListStreamingDistributionsRequest()
-                            .withMarker(page)
-            );
-            return new StreamingDistributionsResponse(result.getStreamingDistributionList().getItems(), result.getStreamingDistributionList().getNextMarker());
-        } catch (Throwable t) {
-            return new StreamingDistributionsResponse(AmazonResponse.parse(t));
-        }
+        return CloudFrontCaller.get(ListStreamingDistributionsRequest.class, StreamingDistributionsResponse.class, credentials).execute((client, request, response) -> {
+            final ListStreamingDistributionsResult result = client.listStreamingDistributions(request.withMarker(page));
+            response.setStreamingDistributions(result.getStreamingDistributionList().getItems());
+            response.setNextPage(result.getStreamingDistributionList().getNextMarker());
+        });
     }
 
     @ApiMethod(
@@ -116,12 +106,10 @@ public final class CloudFrontApi {
             @Named("credentials") final String credentials,
             @Named("id") final String id
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFront> clientWrapper = new AmazonClientHelper(credentials).getCloudFront()) {
-            final GetStreamingDistributionResult result = clientWrapper.getClient().getStreamingDistribution(new GetStreamingDistributionRequest(id));
-            return new StreamingDistributionResponse(result.getStreamingDistribution());
-        } catch (Throwable t) {
-            return new StreamingDistributionResponse(AmazonResponse.parse(t));
-        }
+        return CloudFrontCaller.get(GetStreamingDistributionRequest.class, StreamingDistributionResponse.class, credentials).execute((client, request, response) -> {
+            final GetStreamingDistributionResult result = client.getStreamingDistribution(request.withId(id));
+            response.setStreamingDistribution(result.getStreamingDistribution());
+        });
     }
 
     @ApiMethod(
@@ -134,16 +122,15 @@ public final class CloudFrontApi {
             @Named("distributionId") final String distributionId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFront> clientWrapper = new AmazonClientHelper(credentials).getCloudFront()) {
-            final ListInvalidationsResult result = clientWrapper.getClient().listInvalidations(
-                    new ListInvalidationsRequest()
+        return CloudFrontCaller.get(ListInvalidationsRequest.class, InvalidationsResponse.class, credentials).execute((client, request, response) -> {
+            final ListInvalidationsResult result = client.listInvalidations(
+                    request
                             .withDistributionId(distributionId)
                             .withMarker(page)
             );
-            return new InvalidationsResponse(result.getInvalidationList().getItems(), result.getInvalidationList().getNextMarker());
-        } catch (Throwable t) {
-            return new InvalidationsResponse(AmazonResponse.parse(t));
-        }
+            response.setInvalidationSummaries(result.getInvalidationList().getItems());
+            response.setNextPage(result.getInvalidationList().getNextMarker());
+        });
     }
 
     @ApiMethod(
@@ -156,12 +143,14 @@ public final class CloudFrontApi {
             @Named("distributionId") final String distributionId,
             @Named("id") final String id
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFront> clientWrapper = new AmazonClientHelper(credentials).getCloudFront()) {
-            final GetInvalidationResult result = clientWrapper.getClient().getInvalidation(new GetInvalidationRequest(distributionId, id));
-            return new InvalidationResponse(result.getInvalidation());
-        } catch (Throwable t) {
-            return new InvalidationResponse(AmazonResponse.parse(t));
-        }
+        return CloudFrontCaller.get(GetInvalidationRequest.class, InvalidationResponse.class, credentials).execute((client, request, response) -> {
+            final GetInvalidationResult result = client.getInvalidation(
+                    request
+                            .withDistributionId(distributionId)
+                            .withId(id)
+            );
+            response.setInvalidation(result.getInvalidation());
+        });
     }
 
     @ApiMethod(
@@ -173,15 +162,11 @@ public final class CloudFrontApi {
             @Named("credentials") final String credentials,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFront> clientWrapper = new AmazonClientHelper(credentials).getCloudFront()) {
-            final ListCloudFrontOriginAccessIdentitiesResult result = clientWrapper.getClient().listCloudFrontOriginAccessIdentities(
-                    new ListCloudFrontOriginAccessIdentitiesRequest()
-                            .withMarker(page)
-            );
-            return new OriginAccessIdentitiesResponse(result.getCloudFrontOriginAccessIdentityList().getItems(), result.getCloudFrontOriginAccessIdentityList().getNextMarker());
-        } catch (Throwable t) {
-            return new OriginAccessIdentitiesResponse(AmazonResponse.parse(t));
-        }
+        return CloudFrontCaller.get(ListCloudFrontOriginAccessIdentitiesRequest.class, OriginAccessIdentitiesResponse.class, credentials).execute((client, request, response) -> {
+            final ListCloudFrontOriginAccessIdentitiesResult result = client.listCloudFrontOriginAccessIdentities(request.withMarker(page));
+            response.setOriginAccessIdentitySummaries(result.getCloudFrontOriginAccessIdentityList().getItems());
+            response.setNextPage(result.getCloudFrontOriginAccessIdentityList().getNextMarker());
+        });
     }
 
     @ApiMethod(
@@ -193,11 +178,9 @@ public final class CloudFrontApi {
             @Named("credentials") final String credentials,
             @Named("id") final String id
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudFront> clientWrapper = new AmazonClientHelper(credentials).getCloudFront()) {
-            final GetCloudFrontOriginAccessIdentityResult result = clientWrapper.getClient().getCloudFrontOriginAccessIdentity(new GetCloudFrontOriginAccessIdentityRequest(id));
-            return new OriginAccessIdentityResponse(result.getCloudFrontOriginAccessIdentity());
-        } catch (Throwable t) {
-            return new OriginAccessIdentityResponse(AmazonResponse.parse(t));
-        }
+        return CloudFrontCaller.get(GetCloudFrontOriginAccessIdentityRequest.class, OriginAccessIdentityResponse.class, credentials).execute((client, request, response) -> {
+            final GetCloudFrontOriginAccessIdentityResult result = client.getCloudFrontOriginAccessIdentity(request.withId(id));
+            response.setOriginAccessIdentity(result.getCloudFrontOriginAccessIdentity());
+        });
     }
 }

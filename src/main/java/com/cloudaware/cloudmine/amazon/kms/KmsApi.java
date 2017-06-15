@@ -1,9 +1,9 @@
 package com.cloudaware.cloudmine.amazon.kms;
 
-import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.model.DescribeKeyRequest;
 import com.amazonaws.services.kms.model.DescribeKeyResult;
 import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
+import com.amazonaws.services.kms.model.GetKeyPolicyResult;
 import com.amazonaws.services.kms.model.GetKeyRotationStatusRequest;
 import com.amazonaws.services.kms.model.GetKeyRotationStatusResult;
 import com.amazonaws.services.kms.model.ListAliasesRequest;
@@ -14,10 +14,7 @@ import com.amazonaws.services.kms.model.ListKeyPoliciesRequest;
 import com.amazonaws.services.kms.model.ListKeyPoliciesResult;
 import com.amazonaws.services.kms.model.ListKeysRequest;
 import com.amazonaws.services.kms.model.ListKeysResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -58,15 +55,11 @@ public final class KmsApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSKMS> clientWrapper = new AmazonClientHelper(credentials).getKms(region)) {
-            final ListAliasesResult result = clientWrapper.getClient().listAliases(
-                    new ListAliasesRequest()
-                            .withMarker(page)
-            );
-            return new AliasesResponse(result.getAliases(), result.getNextMarker());
-        } catch (Throwable t) {
-            return new AliasesResponse(AmazonResponse.parse(t));
-        }
+        return KmsCaller.get(ListAliasesRequest.class, AliasesResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListAliasesResult result = client.listAliases(request.withMarker(page));
+            response.setAliases(result.getAliases());
+            response.setNextPage(result.getNextMarker());
+        });
     }
 
     @ApiMethod(
@@ -79,15 +72,11 @@ public final class KmsApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSKMS> clientWrapper = new AmazonClientHelper(credentials).getKms(region)) {
-            final ListKeysResult result = clientWrapper.getClient().listKeys(
-                    new ListKeysRequest()
-                            .withMarker(page)
-            );
-            return new KeysResponse(result.getKeys(), result.getNextMarker());
-        } catch (Throwable t) {
-            return new KeysResponse(AmazonResponse.parse(t));
-        }
+        return KmsCaller.get(ListKeysRequest.class, KeysResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListKeysResult result = client.listKeys(request.withMarker(page));
+            response.setKeys(result.getKeys());
+            response.setNextPage(result.getNextMarker());
+        });
     }
 
     @ApiMethod(
@@ -100,12 +89,10 @@ public final class KmsApi {
             @Named("region") final String region,
             @Named("keyId") final String keyId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSKMS> clientWrapper = new AmazonClientHelper(credentials).getKms(region)) {
-            final DescribeKeyResult describeKeyResult = clientWrapper.getClient().describeKey(new DescribeKeyRequest().withKeyId(keyId));
-            return new KeyResponse(describeKeyResult.getKeyMetadata());
-        } catch (Throwable t) {
-            return new KeyResponse(AmazonResponse.parse(t));
-        }
+        return KmsCaller.get(DescribeKeyRequest.class, KeyResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeKeyResult result = client.describeKey(request.withKeyId(keyId));
+            response.setKey(result.getKeyMetadata());
+        });
     }
 
     @ApiMethod(
@@ -119,16 +106,15 @@ public final class KmsApi {
             @Named("keyId") final String keyId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSKMS> clientWrapper = new AmazonClientHelper(credentials).getKms(region)) {
-            final ListGrantsResult result = clientWrapper.getClient().listGrants(
-                    new ListGrantsRequest()
+        return KmsCaller.get(ListGrantsRequest.class, GrantsResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListGrantsResult result = client.listGrants(
+                    request
                             .withKeyId(keyId)
                             .withMarker(page)
             );
-            return new GrantsResponse(result.getGrants(), result.getNextMarker());
-        } catch (Throwable t) {
-            return new GrantsResponse(AmazonResponse.parse(t));
-        }
+            response.setGrants(result.getGrants());
+            response.setNextPage(result.getNextMarker());
+        });
     }
 
     @ApiMethod(
@@ -142,16 +128,15 @@ public final class KmsApi {
             @Named("keyId") final String keyId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSKMS> clientWrapper = new AmazonClientHelper(credentials).getKms(region)) {
-            final ListKeyPoliciesResult result = clientWrapper.getClient().listKeyPolicies(
-                    new ListKeyPoliciesRequest()
+        return KmsCaller.get(ListKeyPoliciesRequest.class, PoliciesResponse.class, credentials, region).execute((client, request, response) -> {
+            final ListKeyPoliciesResult result = client.listKeyPolicies(
+                    request
                             .withKeyId(keyId)
                             .withMarker(page)
             );
-            return new PoliciesResponse(result.getPolicyNames(), result.getNextMarker());
-        } catch (Throwable t) {
-            return new PoliciesResponse(AmazonResponse.parse(t));
-        }
+            response.setPolicyNames(result.getPolicyNames());
+            response.setNextPage(result.getNextMarker());
+        });
     }
 
     @ApiMethod(
@@ -165,11 +150,14 @@ public final class KmsApi {
             @Named("keyId") final String keyId,
             @Named("policyName") final String policyName
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSKMS> clientWrapper = new AmazonClientHelper(credentials).getKms(region)) {
-            return new PolicyResponse(clientWrapper.getClient().getKeyPolicy(new GetKeyPolicyRequest().withKeyId(keyId).withPolicyName(policyName)).getPolicy());
-        } catch (Throwable t) {
-            return new PolicyResponse(AmazonResponse.parse(t));
-        }
+        return KmsCaller.get(GetKeyPolicyRequest.class, PolicyResponse.class, credentials, region).execute((client, request, response) -> {
+            final GetKeyPolicyResult result = client.getKeyPolicy(
+                    request
+                            .withKeyId(keyId)
+                            .withPolicyName(policyName)
+            );
+            response.setPolicy(result.getPolicy());
+        });
     }
 
     @ApiMethod(
@@ -182,11 +170,12 @@ public final class KmsApi {
             @Named("region") final String region,
             @Named("keyId") final String keyId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSKMS> clientWrapper = new AmazonClientHelper(credentials).getKms(region)) {
-            final GetKeyRotationStatusResult result = clientWrapper.getClient().getKeyRotationStatus(new GetKeyRotationStatusRequest().withKeyId(keyId));
-            return new RotationStatusResponse(result == null ? false : result.getKeyRotationEnabled());
-        } catch (Throwable t) {
-            return new RotationStatusResponse(AmazonResponse.parse(t));
-        }
+        return KmsCaller.get(GetKeyRotationStatusRequest.class, RotationStatusResponse.class, credentials, region).execute((client, request, response) -> {
+            final GetKeyRotationStatusResult result = client.getKeyRotationStatus(
+                    request
+                            .withKeyId(keyId)
+            );
+            response.setKeyRotationEnabled(result == null ? false : result.getKeyRotationEnabled());
+        });
     }
 }

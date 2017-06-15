@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.redshift;
 
 import com.amazonaws.services.redshift.model.Event;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class EventsResponse extends AmazonResponse {
     private List<Event> events;
-
-    public EventsResponse() {
-    }
-
-    public EventsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public EventsResponse(final List<Event> events, final String nextPage) {
-        super(nextPage);
-        this.events = events;
-    }
 
     public List<Event> getEvents() {
         return events;

@@ -1,6 +1,5 @@
 package com.cloudaware.cloudmine.amazon.route53;
 
-import com.amazonaws.services.route53.AmazonRoute53;
 import com.amazonaws.services.route53.model.ChangeTagsForResourceRequest;
 import com.amazonaws.services.route53.model.InvalidArgumentException;
 import com.amazonaws.services.route53.model.ListHostedZonesRequest;
@@ -10,10 +9,8 @@ import com.amazonaws.services.route53.model.ListResourceRecordSetsResult;
 import com.amazonaws.services.route53.model.ListTagsForResourceRequest;
 import com.amazonaws.services.route53.model.ListTagsForResourceResult;
 import com.amazonaws.services.route53.model.Tag;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -57,15 +54,11 @@ public final class Route53Api {
             @Named("credentials") final String credentials,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRoute53> clientWrapper = new AmazonClientHelper(credentials).getRoute53()) {
-            final ListHostedZonesResult result = clientWrapper.getClient().listHostedZones(
-                    new ListHostedZonesRequest()
-                            .withMarker(page)
-            );
-            return new HostedZonesResponse(result.getHostedZones(), result.getNextMarker());
-        } catch (Throwable t) {
-            return new HostedZonesResponse(AmazonResponse.parse(t));
-        }
+        return Route53Caller.get(ListHostedZonesRequest.class, HostedZonesResponse.class, credentials).execute((client, request, response) -> {
+            final ListHostedZonesResult result = client.listHostedZones(request.withMarker(page));
+            response.setHostedZones(result.getHostedZones());
+            response.setNextPage(result.getNextMarker());
+        });
     }
 
     @ApiMethod(
@@ -78,8 +71,8 @@ public final class Route53Api {
             @Named("hostedZoneId") final String hostedZoneId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRoute53> clientWrapper = new AmazonClientHelper(credentials).getRoute53()) {
-            final ListResourceRecordSetsRequest request = new ListResourceRecordSetsRequest(hostedZoneId);
+        return Route53Caller.get(ListResourceRecordSetsRequest.class, ResourceRecordSetsResponse.class, credentials).execute((client, request, response) -> {
+            request.withHostedZoneId(hostedZoneId);
             if (page != null) {
                 final String[] parts = page.split("::");
                 if (parts.length != 3) {
@@ -89,15 +82,15 @@ public final class Route53Api {
                 request.setStartRecordName("null".equals(parts[1]) ? null : parts[1]);
                 request.setStartRecordIdentifier("null".equals(parts[2]) ? null : parts[2]);
             }
-            final ListResourceRecordSetsResult result = clientWrapper.getClient().listResourceRecordSets(request);
-            return new ResourceRecordSetsResponse(
-                    result.getResourceRecordSets(),
+
+            final ListResourceRecordSetsResult result = client.listResourceRecordSets(request);
+            response.setResourceRecordSets(result.getResourceRecordSets());
+            response.setNextPage(
                     result.getNextRecordType() == null && result.getNextRecordName() == null && result.getNextRecordIdentifier() == null
                             ? null
-                            : result.getNextRecordType() + "::" + result.getNextRecordName() + "::" + result.getNextRecordIdentifier());
-        } catch (Throwable t) {
-            return new ResourceRecordSetsResponse(AmazonResponse.parse(t));
-        }
+                            : result.getNextRecordType() + "::" + result.getNextRecordName() + "::" + result.getNextRecordIdentifier()
+            );
+        });
     }
 
     @ApiMethod(
@@ -110,12 +103,10 @@ public final class Route53Api {
             @Named("resourceType") final String resourceType,
             @Named("resourceId") final String resourceId
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRoute53> clientWrapper = new AmazonClientHelper(credentials).getRoute53()) {
-            final ListTagsForResourceResult result = clientWrapper.getClient().listTagsForResource(new ListTagsForResourceRequest().withResourceType(resourceType).withResourceId(resourceId));
-            return new TagsResponse(result.getResourceTagSet());
-        } catch (Throwable t) {
-            return new TagsResponse(AmazonResponse.parse(t));
-        }
+        return Route53Caller.get(ListTagsForResourceRequest.class, TagsResponse.class, credentials).execute((client, request, response) -> {
+            final ListTagsForResourceResult result = client.listTagsForResource(request.withResourceType(resourceType).withResourceId(resourceId));
+            response.setTags(result.getResourceTagSet());
+        });
     }
 
     @ApiMethod(
@@ -129,10 +120,9 @@ public final class Route53Api {
             @Named("resourceId") final String resourceId,
             final TagsRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonRoute53> clientWrapper = new AmazonClientHelper(credentials).getRoute53()) {
-            final ChangeTagsForResourceRequest changeTagsForResourceRequest = new ChangeTagsForResourceRequest();
-            changeTagsForResourceRequest.withResourceType(resourceType);
-            changeTagsForResourceRequest.withResourceId(resourceId);
+        return Route53Caller.get(ChangeTagsForResourceRequest.class, AmazonResponse.class, credentials).execute((client, r, response) -> {
+            r.withResourceType(resourceType);
+            r.withResourceId(resourceId);
             if (request.getAddTags() != null && request.getAddTags().size() > 0) {
                 final Map<String, String> addTagsRequest = request.getAddTags();
                 final List<Tag> addTags = Lists.newArrayList();
@@ -142,15 +132,13 @@ public final class Route53Api {
                     t.setValue(addTagsRequest.get(key));
                     addTags.add(t);
                 }
-                changeTagsForResourceRequest.withAddTags(addTags);
+                r.withAddTags(addTags);
             }
             if (request.getRemoveTagKeys() != null && request.getRemoveTagKeys().size() > 0) {
-                changeTagsForResourceRequest.withRemoveTagKeys(request.getRemoveTagKeys());
+                r.withRemoveTagKeys(request.getRemoveTagKeys());
             }
-            clientWrapper.getClient().changeTagsForResource(changeTagsForResourceRequest);
-            return new AmazonResponse();
-        } catch (Throwable t) {
-            return new AmazonResponse(AmazonResponse.parse(t));
-        }
+
+            client.changeTagsForResource(r);
+        });
     }
 }

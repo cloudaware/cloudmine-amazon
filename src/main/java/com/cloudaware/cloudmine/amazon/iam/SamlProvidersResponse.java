@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.iam;
 
 import com.amazonaws.services.identitymanagement.model.SAMLProviderListEntry;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class SamlProvidersResponse extends AmazonResponse {
     private List<SAMLProviderListEntry> samlProviders;
-
-    public SamlProvidersResponse() {
-    }
-
-    public SamlProvidersResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public SamlProvidersResponse(final List<SAMLProviderListEntry> samlProviders) {
-        this.samlProviders = samlProviders;
-    }
 
     public List<SAMLProviderListEntry> getSamlProviders() {
         return samlProviders;

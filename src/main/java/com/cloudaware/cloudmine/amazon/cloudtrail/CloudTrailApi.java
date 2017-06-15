@@ -1,15 +1,13 @@
 package com.cloudaware.cloudmine.amazon.cloudtrail;
 
-import com.amazonaws.services.cloudtrail.AWSCloudTrail;
+import com.amazonaws.services.cloudtrail.model.DescribeTrailsRequest;
 import com.amazonaws.services.cloudtrail.model.DescribeTrailsResult;
 import com.amazonaws.services.cloudtrail.model.GetTrailStatusRequest;
+import com.amazonaws.services.cloudtrail.model.GetTrailStatusResult;
 import com.amazonaws.services.cloudtrail.model.LookupAttribute;
 import com.amazonaws.services.cloudtrail.model.LookupEventsRequest;
 import com.amazonaws.services.cloudtrail.model.LookupEventsResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -42,6 +40,7 @@ import java.util.List;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class CloudTrailApi {
+
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.POST,
             name = "events.lookup",
@@ -54,8 +53,7 @@ public final class CloudTrailApi {
             @Named("pageSize") @Nullable final Integer pageSize,
             final LookupRequest lookupRequest
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSCloudTrail> clientWrapper = new AmazonClientHelper(credentials).getCloudTrail(region)) {
-            final LookupEventsRequest request = new LookupEventsRequest();
+        return CloudTrailCaller.get(LookupEventsRequest.class, LookupResponse.class, credentials, region).execute((client, request, response) -> {
             request.setStartTime(lookupRequest.getStartTime());
             request.setEndTime(lookupRequest.getEndTime());
             if (lookupRequest.getLookupAttributes() != null) {
@@ -65,15 +63,15 @@ public final class CloudTrailApi {
                 }
                 request.setLookupAttributes(attributes);
             }
-            final LookupEventsResult result = clientWrapper.getClient().lookupEvents(
+
+            final LookupEventsResult result = client.lookupEvents(
                     request
                             .withNextToken(page)
                             .withMaxResults(pageSize)
             );
-            return new LookupResponse(result.getEvents(), result.getNextToken());
-        } catch (Throwable t) {
-            return new LookupResponse(AmazonResponse.parse(t));
-        }
+            response.setEvents(result.getEvents());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -81,13 +79,14 @@ public final class CloudTrailApi {
             name = "trails.list",
             path = "{region}/trails"
     )
-    public TrailsResponse trailsList(@Named("credentials") final String credentials, @Named("region") final String region) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSCloudTrail> clientWrapper = new AmazonClientHelper(credentials).getCloudTrail(region)) {
-            final DescribeTrailsResult response = clientWrapper.getClient().describeTrails();
-            return new TrailsResponse(response.getTrailList());
-        } catch (Throwable t) {
-            return new TrailsResponse(AmazonResponse.parse(t));
-        }
+    public TrailsResponse trailsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region
+    ) throws AmazonUnparsedException {
+        return CloudTrailCaller.get(DescribeTrailsRequest.class, TrailsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeTrailsResult result = client.describeTrails(request);
+            response.setTrails(result.getTrailList());
+        });
     }
 
     @ApiMethod(
@@ -100,10 +99,11 @@ public final class CloudTrailApi {
             @Named("region") final String region,
             @Named("name") final String name
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSCloudTrail> clientWrapper = new AmazonClientHelper(credentials).getCloudTrail(region)) {
-            return new TrailStatusResponse(clientWrapper.getClient().getTrailStatus(new GetTrailStatusRequest().withName(name)));
-        } catch (Throwable t) {
-            return new TrailStatusResponse(AmazonResponse.parse(t));
-        }
+        return CloudTrailCaller.get(GetTrailStatusRequest.class, TrailStatusResponse.class, credentials, region).execute((client, request, response) -> {
+            final GetTrailStatusResult result = client.getTrailStatus(
+                    request.withName(name)
+            );
+            response.setTrailStatus(result);
+        });
     }
 }

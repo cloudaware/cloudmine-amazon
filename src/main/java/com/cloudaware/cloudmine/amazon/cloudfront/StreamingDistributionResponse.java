@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.cloudfront;
 
 import com.amazonaws.services.cloudfront.model.StreamingDistribution;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -11,17 +10,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
  */
 public final class StreamingDistributionResponse extends AmazonResponse {
     private StreamingDistribution streamingDistribution;
-
-    public StreamingDistributionResponse() {
-    }
-
-    public StreamingDistributionResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public StreamingDistributionResponse(final StreamingDistribution streamingDistribution) {
-        this.streamingDistribution = streamingDistribution;
-    }
 
     public StreamingDistribution getStreamingDistribution() {
         return streamingDistribution;

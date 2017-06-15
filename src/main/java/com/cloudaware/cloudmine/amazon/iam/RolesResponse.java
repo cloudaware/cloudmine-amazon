@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.iam;
 
 import com.amazonaws.services.identitymanagement.model.Role;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -15,20 +14,7 @@ public final class RolesResponse extends AmazonResponse {
 
     private List<Role> roles;
 
-    public RolesResponse() {
-    }
-
-    public RolesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public RolesResponse(final List<Role> roles, final String nextPage) {
-        super(nextPage);
-        this.roles = roles;
-    }
-
     public List<Role> getRoles() {
-
         return roles;
     }
 

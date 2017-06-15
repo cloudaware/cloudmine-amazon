@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.ec2;
 
 import com.amazonaws.services.ec2.model.InstanceAttribute;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 /**
@@ -12,17 +11,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
 public final class InstanceAttributeResponse extends AmazonResponse {
 
     private InstanceAttribute instanceAttribute;
-
-    public InstanceAttributeResponse() {
-    }
-
-    public InstanceAttributeResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public InstanceAttributeResponse(final InstanceAttribute instanceAttribute) {
-        this.instanceAttribute = instanceAttribute;
-    }
 
     public InstanceAttribute getInstanceAttribute() {
         return instanceAttribute;

@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.rds;
 
 import com.amazonaws.services.rds.model.DBSubnetGroup;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class DbSubnetGroupsResponse extends AmazonResponse {
     private List<DBSubnetGroup> dbSubnetGroups;
-
-    public DbSubnetGroupsResponse() {
-    }
-
-    public DbSubnetGroupsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public DbSubnetGroupsResponse(final List<DBSubnetGroup> dbSubnetGroups, final String nextPage) {
-        super(nextPage);
-        this.dbSubnetGroups = dbSubnetGroups;
-    }
 
     public List<DBSubnetGroup> getDbSubnetGroups() {
         return dbSubnetGroups;

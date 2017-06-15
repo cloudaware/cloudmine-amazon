@@ -277,5 +277,7 @@ To build client library:
 
 # Changelog
 
+* 1.0.3 - Exceptions now return API action
+* 1.0.2 - Added Redshift Parameter Groups and Security Groups
 * 1.0.1 - Added `amazon.sts.callerIdentity.get`
 * 1.0.0 - Initial release

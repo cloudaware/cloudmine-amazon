@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.storagegateway;
 
 import com.amazonaws.services.storagegateway.model.StorediSCSIVolume;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class StoredVolumesResponse extends AmazonResponse {
     private List<StorediSCSIVolume> storedVolumes;
-
-    public StoredVolumesResponse() {
-    }
-
-    public StoredVolumesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public StoredVolumesResponse(final List<StorediSCSIVolume> storedVolumes) {
-        this.storedVolumes = storedVolumes;
-    }
 
     public List<StorediSCSIVolume> getStoredVolumes() {
         return storedVolumes;

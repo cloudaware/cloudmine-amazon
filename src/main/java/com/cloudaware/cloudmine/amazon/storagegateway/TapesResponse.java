@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.storagegateway;
 
 import com.amazonaws.services.storagegateway.model.Tape;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,18 +12,6 @@ import java.util.List;
  */
 public final class TapesResponse extends AmazonResponse {
     private List<Tape> tapes;
-
-    public TapesResponse() {
-    }
-
-    public TapesResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public TapesResponse(final List<Tape> tapes, final String nextPage) {
-        super(nextPage);
-        this.tapes = tapes;
-    }
 
     public List<Tape> getTapes() {
         return tapes;

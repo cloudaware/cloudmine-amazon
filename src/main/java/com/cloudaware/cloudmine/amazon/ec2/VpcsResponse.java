@@ -1,7 +1,6 @@
 package com.cloudaware.cloudmine.amazon.ec2;
 
 import com.amazonaws.services.ec2.model.Vpc;
-import com.cloudaware.cloudmine.amazon.AmazonException;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 
 import java.util.List;
@@ -13,17 +12,6 @@ import java.util.List;
  */
 public final class VpcsResponse extends AmazonResponse {
     private List<Vpc> vpcs;
-
-    public VpcsResponse() {
-    }
-
-    public VpcsResponse(final AmazonException exception) {
-        super(exception);
-    }
-
-    public VpcsResponse(final List<Vpc> vpcs) {
-        this.vpcs = vpcs;
-    }
 
     public List<Vpc> getVpcs() {
         return vpcs;

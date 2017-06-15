@@ -1,16 +1,12 @@
 package com.cloudaware.cloudmine.amazon.workspaces;
 
-import com.amazonaws.services.workspaces.AmazonWorkspaces;
 import com.amazonaws.services.workspaces.model.DescribeWorkspaceBundlesRequest;
 import com.amazonaws.services.workspaces.model.DescribeWorkspaceBundlesResult;
 import com.amazonaws.services.workspaces.model.DescribeWorkspaceDirectoriesRequest;
 import com.amazonaws.services.workspaces.model.DescribeWorkspaceDirectoriesResult;
 import com.amazonaws.services.workspaces.model.DescribeWorkspacesRequest;
 import com.amazonaws.services.workspaces.model.DescribeWorkspacesResult;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -51,15 +47,11 @@ public final class WorkspacesApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonWorkspaces> clientWrapper = new AmazonClientHelper(credentials).getWorkspaces(region)) {
-            final DescribeWorkspacesResult result = clientWrapper.getClient().describeWorkspaces(
-                    new DescribeWorkspacesRequest()
-                            .withNextToken(page)
-            );
-            return new WorkspacesResponse(result.getWorkspaces(), result.getNextToken());
-        } catch (Throwable t) {
-            return new WorkspacesResponse(AmazonResponse.parse(t));
-        }
+        return WorkspacesCaller.get(DescribeWorkspacesRequest.class, WorkspacesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeWorkspacesResult result = client.describeWorkspaces(request.withNextToken(page));
+            response.setWorkspaces(result.getWorkspaces());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -72,15 +64,11 @@ public final class WorkspacesApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonWorkspaces> clientWrapper = new AmazonClientHelper(credentials).getWorkspaces(region)) {
-            final DescribeWorkspaceDirectoriesResult result = clientWrapper.getClient().describeWorkspaceDirectories(
-                    new DescribeWorkspaceDirectoriesRequest()
-                            .withNextToken(page)
-            );
-            return new WorkspaceDirectoriesResponse(result.getDirectories(), result.getNextToken());
-        } catch (Throwable t) {
-            return new WorkspaceDirectoriesResponse(AmazonResponse.parse(t));
-        }
+        return WorkspacesCaller.get(DescribeWorkspaceDirectoriesRequest.class, WorkspaceDirectoriesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeWorkspaceDirectoriesResult result = client.describeWorkspaceDirectories(request.withNextToken(page));
+            response.setWorkspaceDirectories(result.getDirectories());
+            response.setNextPage(result.getNextToken());
+        });
     }
 
     @ApiMethod(
@@ -93,15 +81,10 @@ public final class WorkspacesApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonWorkspaces> clientWrapper = new AmazonClientHelper(credentials).getWorkspaces(region)) {
-            final DescribeWorkspaceBundlesResult result = clientWrapper.getClient().describeWorkspaceBundles(
-                    new DescribeWorkspaceBundlesRequest()
-                            .withNextToken(page)
-            );
-            return new WorkspaceBundlesResponse(result.getBundles(), result.getNextToken());
-        } catch (Throwable t) {
-            return new WorkspaceBundlesResponse(AmazonResponse.parse(t));
-        }
+        return WorkspacesCaller.get(DescribeWorkspaceBundlesRequest.class, WorkspaceBundlesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeWorkspaceBundlesResult result = client.describeWorkspaceBundles(request.withNextToken(page));
+            response.setWorkspaceBundles(result.getBundles());
+            response.setNextPage(result.getNextToken());
+        });
     }
-
 }

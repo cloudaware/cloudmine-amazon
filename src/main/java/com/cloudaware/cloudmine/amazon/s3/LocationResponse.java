@@ -11,9 +11,6 @@ import com.cloudaware.cloudmine.amazon.AmazonResponse;
 public final class LocationResponse extends AmazonResponse {
     private String location;
 
-    public LocationResponse() {
-    }
-
     public LocationResponse(final AmazonException exception) {
         super(exception);
     }

@@ -1,13 +1,10 @@
 package com.cloudaware.cloudmine.amazon.cloudwatch;
 
-import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.model.DescribeAlarmsRequest;
 import com.amazonaws.services.cloudwatch.model.DescribeAlarmsResult;
 import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
+import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsResult;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.Api;
@@ -37,6 +34,7 @@ import com.google.api.server.spi.config.Nullable;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class CloudWatchApi {
+
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.POST,
             name = "datapoints.metricStatistics",
@@ -47,22 +45,18 @@ public final class CloudWatchApi {
             @Named("region") final String region,
             final MetricStatisticsRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudWatch> clientWrapper = new AmazonClientHelper(credentials).getCw(region)) {
-            return new DatapointsResponse(
-                    clientWrapper.getClient().getMetricStatistics(
-                            new GetMetricStatisticsRequest()
-                                    .withNamespace(request.getNamespace())
-                                    .withMetricName(request.getMetric())
-                                    .withStatistics(request.getStatistics())
-                                    .withStartTime(request.getStartDate())
-                                    .withEndTime(request.getEndDate())
-                                    .withPeriod(request.getPeriod())
-                                    .withDimensions(request.getDimensions())
-                    ).getDatapoints()
+        return CloudWatchCaller.get(GetMetricStatisticsRequest.class, DatapointsResponse.class, credentials, region).execute((client, r, response) -> {
+            final GetMetricStatisticsResult result = client.getMetricStatistics(
+                    r.withNamespace(request.getNamespace())
+                            .withMetricName(request.getMetric())
+                            .withStatistics(request.getStatistics())
+                            .withStartTime(request.getStartDate())
+                            .withEndTime(request.getEndDate())
+                            .withPeriod(request.getPeriod())
+                            .withDimensions(request.getDimensions())
             );
-        } catch (Throwable t) {
-            return new DatapointsResponse(AmazonResponse.parse(t));
-        }
+            response.setDatapoints(result.getDatapoints());
+        });
     }
 
     @ApiMethod(
@@ -75,14 +69,12 @@ public final class CloudWatchApi {
             @Named("region") final String region,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AmazonCloudWatch> clientWrapper = new AmazonClientHelper(credentials).getCw(region)) {
-            final DescribeAlarmsResult result = clientWrapper.getClient().describeAlarms(
-                    new DescribeAlarmsRequest()
-                            .withNextToken(page)
+        return CloudWatchCaller.get(DescribeAlarmsRequest.class, MetricAlarmsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeAlarmsResult result = client.describeAlarms(
+                    request.withNextToken(page)
             );
-            return new MetricAlarmsResponse(result.getMetricAlarms(), result.getNextToken());
-        } catch (Throwable t) {
-            return new MetricAlarmsResponse(AmazonResponse.parse(t));
-        }
+            response.setMetricAlarms(result.getMetricAlarms());
+            response.setNextPage(result.getNextToken());
+        });
     }
 }
