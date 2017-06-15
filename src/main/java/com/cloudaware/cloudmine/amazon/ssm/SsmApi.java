@@ -1,13 +1,9 @@
 package com.cloudaware.cloudmine.amazon.ssm;
 
-import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
 import com.amazonaws.services.simplesystemsmanagement.model.DescribeInstanceInformationRequest;
 import com.amazonaws.services.simplesystemsmanagement.model.DescribeInstanceInformationResult;
 import com.amazonaws.services.simplesystemsmanagement.model.InstanceInformationStringFilter;
-import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
-import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
-import com.cloudaware.cloudmine.amazon.ClientWrapper;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.client.util.Lists;
 import com.google.api.server.spi.config.AnnotationBoolean;
@@ -47,7 +43,7 @@ public final class SsmApi {
             @Named("page") @Nullable final String page,
             @Nullable final InstanceInformationRequest request
     ) throws AmazonUnparsedException {
-        try (ClientWrapper<AWSSimpleSystemsManagement> clientWrapper = new AmazonClientHelper(credentials).getSsm(region)) {
+        return SsmCaller.get(DescribeInstanceInformationRequest.class, InstanceInformationResponse.class, credentials, region).execute((client, r, response) -> {
             final List<InstanceInformationStringFilter> filters = Lists.newArrayList();
             if (request.getFilters() != null) {
                 request.getFilters().forEach((k, v) -> {
@@ -57,15 +53,8 @@ public final class SsmApi {
                     filters.add(filter);
                 });
             }
-            final DescribeInstanceInformationResult result = clientWrapper.getClient()
-                    .describeInstanceInformation(
-                            new DescribeInstanceInformationRequest()
-                                    .withFilters(filters)
-                                    .withNextToken(page)
-                    );
-            return new InstanceInformationResponse(result.getInstanceInformationList(), result.getNextToken());
-        } catch (Throwable t) {
-            return new InstanceInformationResponse(AmazonResponse.parse(t));
-        }
+            final DescribeInstanceInformationResult result = client.describeInstanceInformation(r.withFilters(filters).withNextToken(page));
+            response.setInstanceInformation(result.getInstanceInformationList());
+        });
     }
 }
