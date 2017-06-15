@@ -60,6 +60,8 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
+import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClient;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sqs.AmazonSQS;
@@ -472,6 +474,17 @@ public final class AmazonClientHelper {
     public ClientWrapper<AWSDirectoryService> getDirectoryService(final String region) {
         checkRegion(region);
         final AWSDirectoryService client = AWSDirectoryServiceClient.builder()
+                .withClientConfiguration(config)
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withRegion(region)
+                .build();
+        checkEndpoint(region, (AmazonWebServiceClient) client);
+        return new ClientWrapper<>(client);
+    }
+
+    public ClientWrapper<AWSSimpleSystemsManagement> getSsm(final String region) {
+        checkRegion(region);
+        final AWSSimpleSystemsManagement client = AWSSimpleSystemsManagementClient.builder()
                 .withClientConfiguration(config)
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion(region)

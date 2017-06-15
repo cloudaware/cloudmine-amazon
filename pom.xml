@@ -182,6 +182,11 @@
             <artifactId>aws-java-sdk-directory</artifactId>
             <version>${aws-java-sdk.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-ssm</artifactId>
+            <version>${aws-java-sdk.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.google.inject</groupId>
@@ -354,6 +359,7 @@
                         <param>com.cloudaware.cloudmine.amazon.sts.StsApi</param>
                         <param>com.cloudaware.cloudmine.amazon.support.SupportApi</param>
                         <param>com.cloudaware.cloudmine.amazon.workspaces.WorkspacesApi</param>
+                        <param>com.cloudaware.cloudmine.amazon.ssm.SsmApi</param>
                     </apis>
                 </configuration>
                 <executions>
