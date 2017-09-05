@@ -131,6 +131,7 @@ public class AmazonResponse<T extends AmazonWebServiceResult> {
                     || "TargetGroupNotFound".equals(errorCode)
                     || ("ValidationError".equals(errorCode) && errorMessage.startsWith("Stack with id") && errorMessage.contains("does not exist"))
                     || ("ValidationError".equals(errorCode) && errorMessage.startsWith("Group") && errorMessage.contains("not found"))
+                    || "PipelineDeletedException".equals(errorCode)
                     ) {
                 return new AmazonException(AmazonException.Category.OBJECT_NOT_FOUND, action, ex);
             }
