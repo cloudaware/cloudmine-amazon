@@ -53,7 +53,7 @@ public final class EcrApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "repositories.getPolicy",
+            name = "repositories.policy.get",
             path = "{region}/repositories/{repositoryName}/policy"
     )
     public RepositoryPolicyResponse repositoriesGetPolicy(
