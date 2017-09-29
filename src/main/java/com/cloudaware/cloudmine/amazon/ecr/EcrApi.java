@@ -54,7 +54,7 @@ public final class EcrApi {
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
             name = "repositories.getPolicy",
-            path = "{region}/repositories/{repositoryName}/get-policy"
+            path = "{region}/repositories/{repositoryName}/policy"
     )
     public RepositoryPolicyResponse repositoriesGetPolicy(
             @Named("credentials") final String credentials,
