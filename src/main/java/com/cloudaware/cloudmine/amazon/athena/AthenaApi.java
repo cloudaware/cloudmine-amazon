@@ -4,8 +4,6 @@ import com.amazonaws.services.athena.model.BatchGetNamedQueryRequest;
 import com.amazonaws.services.athena.model.BatchGetNamedQueryResult;
 import com.amazonaws.services.athena.model.BatchGetQueryExecutionRequest;
 import com.amazonaws.services.athena.model.BatchGetQueryExecutionResult;
-import com.amazonaws.services.athena.model.GetQueryResultsRequest;
-import com.amazonaws.services.athena.model.GetQueryResultsResult;
 import com.amazonaws.services.athena.model.ListNamedQueriesRequest;
 import com.amazonaws.services.athena.model.ListNamedQueriesResult;
 import com.amazonaws.services.athena.model.ListQueryExecutionsRequest;
@@ -63,7 +61,7 @@ public final class AthenaApi {
     public NamedQueriesResponse namedQueriesList(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            @Named("namedQueryIds") final List<String> namedQueryIds
+            @Named("namedQueryId") final List<String> namedQueryIds
     ) throws AmazonUnparsedException {
         return AthenaCaller.get(BatchGetNamedQueryRequest.class, NamedQueriesResponse.class, credentials, region).execute((client, request, response) -> {
             final BatchGetNamedQueryResult result = client.batchGetNamedQuery(request.withNamedQueryIds(namedQueryIds));
@@ -97,28 +95,12 @@ public final class AthenaApi {
     public QueryExecutionsResponse queryExecutionsList(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            @Named("queryExecutionIds") final List<String> queryExecutionIds
+            @Named("queryExecutionId") final List<String> queryExecutionIds
     ) throws AmazonUnparsedException {
         return AthenaCaller.get(BatchGetQueryExecutionRequest.class, QueryExecutionsResponse.class, credentials, region).execute((client, request, response) -> {
             final BatchGetQueryExecutionResult result = client.batchGetQueryExecution(request.withQueryExecutionIds(queryExecutionIds));
             response.setQueryExecutions(result.getQueryExecutions());
             response.setUnprocessedQueryExecutionIds(result.getUnprocessedQueryExecutionIds());
-        });
-    }
-
-    @ApiMethod(
-            httpMethod = ApiMethod.HttpMethod.GET,
-            name = "queryResults.get",
-            path = "{region}/query-executions/{queryExecutionId}/query-results"
-    )
-    public QueryResultsResponse queryResultsGet(
-            @Named("credentials") final String credentials,
-            @Named("region") final String region,
-            @Named("queryExecutionId") final String queryExecutionId
-    ) throws AmazonUnparsedException {
-        return AthenaCaller.get(GetQueryResultsRequest.class, QueryResultsResponse.class, credentials, region).execute((client, request, response) -> {
-            final GetQueryResultsResult result = client.getQueryResults(request.withQueryExecutionId(queryExecutionId));
-            response.setResultSet(result.getResultSet());
         });
     }
 }
