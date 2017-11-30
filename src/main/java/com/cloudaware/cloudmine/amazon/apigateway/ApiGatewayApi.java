@@ -36,7 +36,7 @@ import com.google.api.server.spi.config.Nullable;
 @Api(
         name = "apigateway",
         canonicalName = "ApiGateway",
-        title = "Amazon Api Gateway",
+        title = "Amazon API Gateway",
         description = "Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure APIs at any scale.",
         namespace = @ApiNamespace(
                 ownerDomain = "cloudaware.com",
