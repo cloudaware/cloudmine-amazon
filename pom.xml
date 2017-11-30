@@ -292,6 +292,11 @@
             <artifactId>aws-java-sdk-glue</artifactId>
             <version>${aws-java-sdk.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-api-gateway</artifactId>
+            <version>${aws-java-sdk.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.google.inject</groupId>
@@ -433,6 +438,7 @@
                 <version>1.0.1</version>
                 <configuration>
                     <apis>
+                        <param>com.cloudaware.cloudmine.amazon.apigateway.ApiGatewayApi</param>
                         <param>com.cloudaware.cloudmine.amazon.athena.AthenaApi</param>
                         <param>com.cloudaware.cloudmine.amazon.autoscaling.AutoScalingApi</param>
                         <param>com.cloudaware.cloudmine.amazon.cloudformation.CloudFormationApi</param>
