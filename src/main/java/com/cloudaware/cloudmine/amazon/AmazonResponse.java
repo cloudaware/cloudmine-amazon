@@ -66,7 +66,8 @@ public class AmazonResponse<T extends AmazonWebServiceResult> {
             if ("Throttling".equals(errorCode)
                     || "ThrottlingException".equals(errorCode)
                     || "TooManyRequestsException".equals(errorCode)
-                    || "RequestLimitExceeded".equals(errorCode)) {
+                    || "RequestLimitExceeded".equals(errorCode)
+                    || "LimitExceededException".equals(errorCode)) {
                 return new AmazonException(AmazonException.Category.THROTTLING, action, ex);
             }
             /**

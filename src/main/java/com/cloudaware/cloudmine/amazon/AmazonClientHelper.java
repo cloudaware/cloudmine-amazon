@@ -86,6 +86,8 @@ import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.AWSLambdaClient;
+import com.amazonaws.services.lightsail.AmazonLightsail;
+import com.amazonaws.services.lightsail.AmazonLightsailClient;
 import com.amazonaws.services.organizations.AWSOrganizations;
 import com.amazonaws.services.organizations.AWSOrganizationsClient;
 import com.amazonaws.services.rds.AmazonRDS;
@@ -840,6 +842,17 @@ public final class AmazonClientHelper {
     public ClientWrapper<AmazonApiGateway> getApiGateway(final String region) {
         checkRegion(region);
         final AmazonApiGateway client = AmazonApiGatewayClient.builder()
+                .withClientConfiguration(config)
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withRegion(region)
+                .build();
+        checkEndpoint(region, (AmazonWebServiceClient) client);
+        return new ClientWrapper<>(client);
+    }
+
+    public ClientWrapper<AmazonLightsail> getLightsail(final String region) {
+        checkRegion(region);
+        final AmazonLightsail client = AmazonLightsailClient.builder()
                 .withClientConfiguration(config)
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion(region)
