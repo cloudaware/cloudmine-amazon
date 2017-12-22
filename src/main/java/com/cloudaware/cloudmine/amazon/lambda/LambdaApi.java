@@ -14,6 +14,9 @@ import com.amazonaws.services.lambda.model.ListTagsRequest;
 import com.amazonaws.services.lambda.model.ListTagsResult;
 import com.amazonaws.services.lambda.model.ListVersionsByFunctionRequest;
 import com.amazonaws.services.lambda.model.ListVersionsByFunctionResult;
+import com.amazonaws.services.lambda.model.TagResourceRequest;
+import com.amazonaws.services.lambda.model.UntagResourceRequest;
+import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
@@ -178,6 +181,36 @@ public final class LambdaApi {
                             .withResource(arn)
             );
             response.setTags(result.getTags());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "tags.create",
+            path = "{region}/tags/create"
+    )
+    public AmazonResponse createTags(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            final TagsRequest request
+    ) throws AmazonUnparsedException {
+        return LambdaCaller.get(TagResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
+            client.tagResource(r.withResource(request.getArn()).withTags(request.getTags()));
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "tags.delete",
+            path = "{region}/tags/detele"
+    )
+    public AmazonResponse tagsDelete(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            final TagsRequest request
+    ) throws AmazonUnparsedException {
+        return LambdaCaller.get(UntagResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
+            client.untagResource(r.withResource(request.getArn()).withTagKeys(request.getTags().keySet()));
         });
     }
 }

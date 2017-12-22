@@ -8,6 +8,10 @@ import com.amazonaws.services.dynamodbv2.model.ListTablesRequest;
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
 import com.amazonaws.services.dynamodbv2.model.ListTagsOfResourceRequest;
 import com.amazonaws.services.dynamodbv2.model.ListTagsOfResourceResult;
+import com.amazonaws.services.dynamodbv2.model.Tag;
+import com.amazonaws.services.dynamodbv2.model.TagResourceRequest;
+import com.amazonaws.services.dynamodbv2.model.UntagResourceRequest;
+import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
@@ -16,6 +20,9 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
+import com.google.common.collect.Lists;
+
+import java.util.List;
 
 /**
  * User: urmuzov
@@ -112,4 +119,40 @@ public final class DynamoDbApi {
         });
     }
 
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "tags.create",
+            path = "{region}/tags/create"
+    )
+    public AmazonResponse createTags(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            final TagsRequest request
+    ) throws AmazonUnparsedException {
+        return DynamoDbCaller.get(TagResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
+            final List<Tag> tags = Lists.newArrayList();
+            for (final String key : request.getTags().keySet()) {
+                final Tag tag = new Tag();
+                tag.setKey(key);
+                tag.setValue(request.getTags().get(key));
+                tags.add(tag);
+            }
+            client.tagResource(r.withResourceArn(request.getArn()).withTags(tags));
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "tags.delete",
+            path = "{region}/tags/detele"
+    )
+    public AmazonResponse tagsDelete(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            final TagsRequest request
+    ) throws AmazonUnparsedException {
+        return DynamoDbCaller.get(UntagResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
+            client.untagResource(r.withResourceArn(request.getArn()).withTagKeys(request.getTags().keySet()));
+        });
+    }
 }

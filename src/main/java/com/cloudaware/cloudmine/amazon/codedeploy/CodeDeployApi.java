@@ -1,5 +1,6 @@
 package com.cloudaware.cloudmine.amazon.codedeploy;
 
+import com.amazonaws.services.codedeploy.model.AddTagsToOnPremisesInstancesRequest;
 import com.amazonaws.services.codedeploy.model.BatchGetApplicationRevisionsRequest;
 import com.amazonaws.services.codedeploy.model.BatchGetApplicationRevisionsResult;
 import com.amazonaws.services.codedeploy.model.BatchGetApplicationsRequest;
@@ -30,7 +31,10 @@ import com.amazonaws.services.codedeploy.model.ListGitHubAccountTokenNamesReques
 import com.amazonaws.services.codedeploy.model.ListGitHubAccountTokenNamesResult;
 import com.amazonaws.services.codedeploy.model.ListOnPremisesInstancesRequest;
 import com.amazonaws.services.codedeploy.model.ListOnPremisesInstancesResult;
+import com.amazonaws.services.codedeploy.model.RemoveTagsFromOnPremisesInstancesRequest;
+import com.amazonaws.services.codedeploy.model.Tag;
 import com.amazonaws.services.codedeploy.model.TimeRange;
+import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
@@ -39,6 +43,7 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
+import com.google.common.collect.Lists;
 
 import java.util.Date;
 import java.util.List;
@@ -202,7 +207,7 @@ public final class CodeDeployApi {
             @Named("includeOnlyStatuses") @Nullable final List<String> includeOnlyStatuses,
             @Named("startDate") @Nullable final Date startDate,
             @Named("endDate") @Nullable final Date endDate,
-            @Named("page")@Nullable final String page
+            @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
         return CodeDeployCaller.get(ListDeploymentsRequest.class, DeploymentIdsResponse.class, credentials, region).execute((client, request, response) -> {
             final ListDeploymentsResult result = client.listDeployments(
@@ -351,6 +356,50 @@ public final class CodeDeployApi {
         return CodeDeployCaller.get(BatchGetOnPremisesInstancesRequest.class, OnPremisesInstancesResponse.class, credentials, region).execute((client, request, response) -> {
             final BatchGetOnPremisesInstancesResult result = client.batchGetOnPremisesInstances(request.withInstanceNames(instanceNames));
             response.setInstances(result.getInstanceInfos());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "onPremisesInstances.tags.create",
+            path = "{region}/on-premises-instances/tags/create"
+    )
+    public AmazonResponse onPremisesInstancesTagsCreate(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            final TagsRequest tagsRequest
+    ) throws AmazonUnparsedException {
+        return CodeDeployCaller.get(AddTagsToOnPremisesInstancesRequest.class, AmazonResponse.class, credentials, region).execute((client, request, response) -> {
+            final List<Tag> tags = Lists.newArrayList();
+            for (final String key : tagsRequest.getTags().keySet()) {
+                final Tag tag = new Tag();
+                tag.setKey(key);
+                tag.setValue(tagsRequest.getTags().get(key));
+                tags.add(tag);
+            }
+            client.addTagsToOnPremisesInstances(request.withInstanceNames(tagsRequest.getInstanceNames()).withTags(tags));
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "onPremisesInstances.tags.delete",
+            path = "{region}/on-premises-instances/tags/delete"
+    )
+    public AmazonResponse onPremisesInstancesTagsDelete(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            final TagsRequest tagsRequest
+    ) throws AmazonUnparsedException {
+        return CodeDeployCaller.get(RemoveTagsFromOnPremisesInstancesRequest.class, AmazonResponse.class, credentials, region).execute((client, request, response) -> {
+            final List<Tag> tags = Lists.newArrayList();
+            for (final String key : tagsRequest.getTags().keySet()) {
+                final Tag tag = new Tag();
+                tag.setKey(key);
+                tag.setValue(tagsRequest.getTags().get(key));
+                tags.add(tag);
+            }
+            client.removeTagsFromOnPremisesInstances(request.withInstanceNames(tagsRequest.getInstanceNames()).withTags(tags));
         });
     }
 

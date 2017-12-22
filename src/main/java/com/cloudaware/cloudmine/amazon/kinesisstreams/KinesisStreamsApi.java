@@ -1,11 +1,14 @@
 package com.cloudaware.cloudmine.amazon.kinesisstreams;
 
+import com.amazonaws.services.kinesis.model.AddTagsToStreamRequest;
 import com.amazonaws.services.kinesis.model.DescribeStreamRequest;
 import com.amazonaws.services.kinesis.model.DescribeStreamResult;
 import com.amazonaws.services.kinesis.model.ListStreamsRequest;
 import com.amazonaws.services.kinesis.model.ListStreamsResult;
 import com.amazonaws.services.kinesis.model.ListTagsForStreamRequest;
 import com.amazonaws.services.kinesis.model.ListTagsForStreamResult;
+import com.amazonaws.services.kinesis.model.RemoveTagsFromStreamRequest;
+import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
@@ -93,6 +96,36 @@ public final class KinesisStreamsApi {
             }
 
             response.setTags(result.getTags());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "tags.create",
+            path = "{region}/tags/create"
+    )
+    public AmazonResponse createTags(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            final TagsRequest request
+    ) throws AmazonUnparsedException {
+        return KinesisStreamsCaller.get(AddTagsToStreamRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
+            client.addTagsToStream(r.withStreamName(request.getStreamName()).withTags(request.getTags()));
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "tags.delete",
+            path = "{region}/tags/detele"
+    )
+    public AmazonResponse tagsDelete(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            final TagsRequest request
+    ) throws AmazonUnparsedException {
+        return KinesisStreamsCaller.get(RemoveTagsFromStreamRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
+            client.removeTagsFromStream(r.withStreamName(request.getStreamName()).withTagKeys(request.getTags().keySet()));
         });
     }
 }
