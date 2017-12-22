@@ -153,6 +153,9 @@ public final class CodeBuildApi {
             updateProjectRequest.setServiceRole(request.getServiceRole());
             updateProjectRequest.setSource(request.getSource());
             updateProjectRequest.setTimeoutInMinutes(request.getTimeoutInMinutes());
+            updateProjectRequest.setCache(request.getCache());
+            updateProjectRequest.setVpcConfig(request.getVpcConfig());
+            updateProjectRequest.setBadgeEnabled(request.getBadgeEnabled());
             final List<Tag> tags = Lists.newArrayList();
             for (final String key : request.getTags().keySet()) {
                 final Tag tag = new Tag();

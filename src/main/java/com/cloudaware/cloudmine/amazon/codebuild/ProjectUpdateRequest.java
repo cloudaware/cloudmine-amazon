@@ -1,8 +1,10 @@
 package com.cloudaware.cloudmine.amazon.codebuild;
 
 import com.amazonaws.services.codebuild.model.ProjectArtifacts;
+import com.amazonaws.services.codebuild.model.ProjectCache;
 import com.amazonaws.services.codebuild.model.ProjectEnvironment;
 import com.amazonaws.services.codebuild.model.ProjectSource;
+import com.amazonaws.services.codebuild.model.VpcConfig;
 
 import java.util.Map;
 
@@ -20,6 +22,10 @@ public final class ProjectUpdateRequest {
     private String serviceRole;
     private ProjectSource source;
     private Integer timeoutInMinutes;
+    private ProjectCache cache;
+    private VpcConfig vpcConfig;
+    private Boolean badgeEnabled;
+
     private Map<String, String> tags;
 
     public String getProjectName() {
@@ -92,5 +98,29 @@ public final class ProjectUpdateRequest {
 
     public void setTimeoutInMinutes(final Integer timeoutInMinutes) {
         this.timeoutInMinutes = timeoutInMinutes;
+    }
+
+    public Boolean getBadgeEnabled() {
+        return badgeEnabled;
+    }
+
+    public void setBadgeEnabled(final Boolean badgeEnabled) {
+        this.badgeEnabled = badgeEnabled;
+    }
+
+    public VpcConfig getVpcConfig() {
+        return vpcConfig;
+    }
+
+    public void setVpcConfig(final VpcConfig vpcConfig) {
+        this.vpcConfig = vpcConfig;
+    }
+
+    public ProjectCache getCache() {
+        return cache;
+    }
+
+    public void setCache(final ProjectCache cache) {
+        this.cache = cache;
     }
 }
