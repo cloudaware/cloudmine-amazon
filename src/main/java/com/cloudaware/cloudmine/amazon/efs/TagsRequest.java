@@ -1,6 +1,8 @@
 package com.cloudaware.cloudmine.amazon.efs;
 
-import java.util.Map;
+import com.amazonaws.services.elasticfilesystem.model.Tag;
+
+import java.util.List;
 
 /**
  * User: tolstikov
@@ -8,30 +10,20 @@ import java.util.Map;
  */
 public final class TagsRequest {
 
-    private String fileSystemId;
-    private Map<String, String> tags;
+    private List<Tag> tags;
 
-    public TagsRequest(final String fileSystemId, final Map<String, String> tags) {
-        this.fileSystemId = fileSystemId;
+    public TagsRequest(final List<Tag> tags) {
         this.tags = tags;
     }
 
     public TagsRequest() {
     }
 
-    public String getFileSystemId() {
-        return fileSystemId;
-    }
-
-    public void setFileSystemId(final String fileSystemId) {
-        this.fileSystemId = fileSystemId;
-    }
-
-    public Map<String, String> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(final Map<String, String> tags) {
+    public void setTags(final List<Tag> tags) {
         this.tags = tags;
     }
 }

@@ -1,12 +1,13 @@
 package com.cloudaware.cloudmine.amazon.codedeploy;
 
+import com.amazonaws.services.codedeploy.model.Tag;
+
 import java.util.List;
-import java.util.Map;
 
 public final class TagsRequest {
 
     private List<String> instanceNames;
-    private Map<String, String> tags;
+    private List<Tag> tags;
 
     public List<String> getInstanceNames() {
         return instanceNames;
@@ -16,11 +17,11 @@ public final class TagsRequest {
         this.instanceNames = instanceNames;
     }
 
-    public Map<String, String> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(final Map<String, String> tags) {
+    public void setTags(final List<Tag> tags) {
         this.tags = tags;
     }
 }

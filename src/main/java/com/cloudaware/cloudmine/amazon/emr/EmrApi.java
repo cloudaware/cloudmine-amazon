@@ -22,7 +22,6 @@ import com.amazonaws.services.elasticmapreduce.model.ListStepsResult;
 import com.amazonaws.services.elasticmapreduce.model.RemoveTagsRequest;
 import com.amazonaws.services.elasticmapreduce.model.RunJobFlowRequest;
 import com.amazonaws.services.elasticmapreduce.model.RunJobFlowResult;
-import com.amazonaws.services.elasticmapreduce.model.Tag;
 import com.amazonaws.services.elasticmapreduce.model.TerminateJobFlowsRequest;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
@@ -33,7 +32,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
-import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -225,38 +223,33 @@ public final class EmrApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.POST,
-            name = "clusters.tags.create",
-            path = "{region}/clusters/tags/create"
+            name = "tags.add",
+            path = "{region}/{resourceId}/tags"
     )
-    public AmazonResponse createTags(
+    public AmazonResponse tagsAdd(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
+            @Named("resourceId") final String resourceId,
             final TagsRequest request
     ) throws AmazonUnparsedException {
         return EmrCaller.get(AddTagsRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            final List<Tag> tags = Lists.newArrayList();
-            for (final String key : request.getTags().keySet()) {
-                final Tag tag = new Tag();
-                tag.setKey(key);
-                tag.setValue(request.getTags().get(key));
-                tags.add(tag);
-            }
-            client.addTags(r.withResourceId(request.getClusterId()).withTags(tags));
+            client.addTags(r.withResourceId(resourceId).withTags(request.getTags()));
         });
     }
 
     @ApiMethod(
-            httpMethod = ApiMethod.HttpMethod.POST,
-            name = "clusters.tags.delete",
-            path = "{region}/clusters/tags/detele"
+            httpMethod = ApiMethod.HttpMethod.DELETE,
+            name = "tags.remove",
+            path = "{region}/{resourceId}/tags"
     )
-    public AmazonResponse tagsDelete(
+    public AmazonResponse tagsRemove(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            final TagsRequest request
+            @Named("resourceId") final String resourceId,
+            @Named("tagKey") final List<String> tagKeys
     ) throws AmazonUnparsedException {
         return EmrCaller.get(RemoveTagsRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            client.removeTags(r.withResourceId(request.getClusterId()).withTagKeys(request.getTags().keySet()));
+            client.removeTags(r.withResourceId(resourceId).withTagKeys(tagKeys));
         });
     }
 

@@ -30,7 +30,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import java.util.List;
@@ -221,10 +220,10 @@ public final class ElastiCacheApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "tags.get",
-            path = "{region}/tags/ARN"
+            name = "resources.tags.get",
+            path = "{region}/resources/ARN/tags"
     )
-    public TagsResponse tagsForResource(
+    public TagsResponse resourcesTagsGet(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
             @Named("arn") final String arn
@@ -244,46 +243,40 @@ public final class ElastiCacheApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.POST,
-            name = "tags.add",
-            path = "{region}/tags/add"
+            name = "resources.tags.add",
+            path = "{region}/resources/ARN/tags"
     )
-    public AmazonResponse addTags(
+    public AmazonResponse resourcesTagsAdd(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
+            @Named("arn") final String arn,
             final TagsRequest request
     ) throws AmazonUnparsedException {
         return ElastiCacheCaller.get(AddTagsToResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, addTagsToResourceRequest, response) -> {
-            final List<Tag> tags = Lists.newArrayList();
-            for (final String key : request.getTags().keySet()) {
-                final Tag tag = new Tag();
-                tag.setKey(key);
-                tag.setValue(request.getTags().get(key));
-                tags.add(tag);
-            }
-
             client.addTagsToResource(
                     addTagsToResourceRequest
-                            .withResourceName(request.getArn())
-                            .withTags(tags)
+                            .withResourceName(arn)
+                            .withTags(request.getTags())
             );
         });
     }
 
     @ApiMethod(
-            httpMethod = ApiMethod.HttpMethod.POST,
-            name = "tags.delete",
-            path = "{region}/tags/delete"
+            httpMethod = ApiMethod.HttpMethod.DELETE,
+            name = "resources.tags.remove",
+            path = "{region}/resources/ARN/tags"
     )
-    public AmazonResponse deleteTags(
+    public AmazonResponse resourcesTagsRemove(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            final TagsRequest request
+            @Named("arn") final String arn,
+            @Named("tagKey") final List<String> tagKeys
     ) throws AmazonUnparsedException {
         return ElastiCacheCaller.get(RemoveTagsFromResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, removeTagsFromResourceRequest, response) -> {
             client.removeTagsFromResource(
                     removeTagsFromResourceRequest
-                            .withResourceName(request.getArn())
-                            .withTagKeys(request.getTags().keySet())
+                            .withResourceName(arn)
+                            .withTagKeys(tagKeys)
             );
         });
     }

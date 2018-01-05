@@ -1,6 +1,8 @@
 package com.cloudaware.cloudmine.amazon.rds;
 
-import java.util.Map;
+import com.amazonaws.services.rds.model.Tag;
+
+import java.util.List;
 
 /**
  * User: tolstikov
@@ -8,25 +10,16 @@ import java.util.Map;
  * Time: 4:12 PM
  */
 public final class TagsRequest {
-    private String resourceArn;
-    private Map<String, String> tags;
+    private List<Tag> tags;
 
     public TagsRequest() {
     }
 
-    public String getResourceArn() {
-        return resourceArn;
-    }
-
-    public void setResourceArn(final String resourceArn) {
-        this.resourceArn = resourceArn;
-    }
-
-    public Map<String, String> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(final Map<String, String> tags) {
+    public void setTags(final List<Tag> tags) {
         this.tags = tags;
     }
 }

@@ -8,23 +8,13 @@ import java.util.Map;
  */
 public final class TagsRequest {
 
-    private String streamName;
     private Map<String, String> tags;
 
-    public TagsRequest(final String streamName, final Map<String, String> tags) {
-        this.streamName = streamName;
+    public TagsRequest(final Map<String, String> tags) {
         this.tags = tags;
     }
 
     public TagsRequest() {
-    }
-
-    public String getStreamName() {
-        return streamName;
-    }
-
-    public void setStreamName(final String streamName) {
-        this.streamName = streamName;
     }
 
     public Map<String, String> getTags() {

@@ -22,7 +22,6 @@ import com.amazonaws.services.directory.model.ListSchemaExtensionsResult;
 import com.amazonaws.services.directory.model.ListTagsForResourceRequest;
 import com.amazonaws.services.directory.model.ListTagsForResourceResult;
 import com.amazonaws.services.directory.model.RemoveTagsFromResourceRequest;
-import com.amazonaws.services.directory.model.Tag;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
 import com.cloudaware.cloudmine.amazon.Constants;
@@ -32,7 +31,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
-import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -243,19 +241,19 @@ public final class DirectoryServiceApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "directories.tags.get",
-            path = "{region}/directories/{directoryId}/tags"
+            name = "resources.tags.list",
+            path = "{region}/resources/{resourceId}/tags"
     )
-    public TagsResponse directoriesTagsGet(
+    public TagsResponse resourcesTagsGet(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            @Named("directoryId") final String directoryId,
+            @Named("resourceId") final String resourceId,
             @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
         return DirectoryServiceCaller.get(ListTagsForResourceRequest.class, TagsResponse.class, credentials, region).execute((client, request, response) -> {
             final ListTagsForResourceResult result = client.listTagsForResource(
                     request
-                            .withResourceId(directoryId)
+                            .withResourceId(resourceId)
                             .withNextToken(page)
             );
             response.setTags(result.getTags());
@@ -265,38 +263,33 @@ public final class DirectoryServiceApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.POST,
-            name = "directories.tags.create",
-            path = "{region}/directories/tags/create"
+            name = "resources.tags.add",
+            path = "{region}/resources/{resourceId}/tags"
     )
-    public AmazonResponse createTags(
+    public AmazonResponse resourcesTagsAdd(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            final TagsRequest request
+            @Named("resourceId") final String resourceId,
+            final AddTagsRequest request
     ) throws AmazonUnparsedException {
         return DirectoryServiceCaller.get(AddTagsToResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            final List<Tag> tags = Lists.newArrayList();
-            for (final String key : request.getTags().keySet()) {
-                final Tag tag = new Tag();
-                tag.setKey(key);
-                tag.setValue(request.getTags().get(key));
-                tags.add(tag);
-            }
-            client.addTagsToResource(r.withResourceId(request.getResourceId()).withTags(tags));
+            client.addTagsToResource(r.withResourceId(resourceId).withTags(request.getTags()));
         });
     }
 
     @ApiMethod(
-            httpMethod = ApiMethod.HttpMethod.POST,
-            name = "directories.tags.delete",
-            path = "{region}/directories/tags/detele"
+            httpMethod = ApiMethod.HttpMethod.DELETE,
+            name = "resources.tags.remove",
+            path = "{region}/resources/{resourceId}/tags"
     )
-    public AmazonResponse tagsDelete(
+    public AmazonResponse resourcesTagsRemove(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            final TagsRequest request
+            @Named("resourceId") final String resourceId,
+            @Named("tagKey") final List<String> tagKeys
     ) throws AmazonUnparsedException {
         return DirectoryServiceCaller.get(RemoveTagsFromResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            client.removeTagsFromResource(r.withResourceId(request.getResourceId()).withTagKeys(request.getTags().keySet()));
+            client.removeTagsFromResource(r.withResourceId(resourceId).withTagKeys(tagKeys));
         });
     }
 }

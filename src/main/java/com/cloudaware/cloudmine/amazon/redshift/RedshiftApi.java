@@ -16,7 +16,6 @@ import com.amazonaws.services.redshift.model.DescribeReservedNodesRequest;
 import com.amazonaws.services.redshift.model.DescribeReservedNodesResult;
 import com.amazonaws.services.redshift.model.DescribeTagsRequest;
 import com.amazonaws.services.redshift.model.DescribeTagsResult;
-import com.amazonaws.services.redshift.model.Tag;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
 import com.cloudaware.cloudmine.amazon.Constants;
@@ -26,7 +25,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
-import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -123,7 +121,7 @@ public final class RedshiftApi {
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
             name = "tags.get",
-            path = "{region}/tags/ARN"
+            path = "{region}/ARN/tags"
     )
     public TagsResponse tagsGet(
             @Named("credentials") final String credentials,
@@ -141,38 +139,32 @@ public final class RedshiftApi {
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.POST,
             name = "tags.create",
-            path = "{region}/tags/create"
+            path = "{region}/ARN/tags"
     )
     public AmazonResponse createTags(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
+            @Named("arn") final String arn,
             final TagsRequest request
     ) throws AmazonUnparsedException {
         return RedshiftCaller.get(CreateTagsRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            final List<Tag> tags = Lists.newArrayList();
-            for (final String key : request.getTags().keySet()) {
-                final Tag tag = new Tag();
-                tag.setKey(key);
-                tag.setValue(request.getTags().get(key));
-                tags.add(tag);
-            }
-
-            client.createTags(r.withResourceName(request.getArn()).withTags(tags));
+            client.createTags(r.withResourceName(arn).withTags(request.getTags()));
         });
     }
 
     @ApiMethod(
-            httpMethod = ApiMethod.HttpMethod.POST,
+            httpMethod = ApiMethod.HttpMethod.DELETE,
             name = "tags.delete",
-            path = "{region}/tags/detele"
+            path = "{region}/ARN/tags"
     )
     public AmazonResponse tagsDelete(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            final TagsRequest request
+            @Named("arn") final String arn,
+            @Named("tagKey") final List<String> tagKeys
     ) throws AmazonUnparsedException {
         return RedshiftCaller.get(DeleteTagsRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            client.deleteTags(r.withResourceName(request.getArn()).withTagKeys(request.getTags().keySet()));
+            client.deleteTags(r.withResourceName(arn).withTagKeys(tagKeys));
         });
     }
 

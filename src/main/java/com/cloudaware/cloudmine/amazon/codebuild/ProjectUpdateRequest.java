@@ -4,9 +4,10 @@ import com.amazonaws.services.codebuild.model.ProjectArtifacts;
 import com.amazonaws.services.codebuild.model.ProjectCache;
 import com.amazonaws.services.codebuild.model.ProjectEnvironment;
 import com.amazonaws.services.codebuild.model.ProjectSource;
+import com.amazonaws.services.codebuild.model.Tag;
 import com.amazonaws.services.codebuild.model.VpcConfig;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * User: tolstikov
@@ -26,7 +27,7 @@ public final class ProjectUpdateRequest {
     private VpcConfig vpcConfig;
     private Boolean badgeEnabled;
 
-    private Map<String, String> tags;
+    private List<Tag> tags;
 
     public String getProjectName() {
         return projectName;
@@ -52,11 +53,11 @@ public final class ProjectUpdateRequest {
         this.description = description;
     }
 
-    public Map<String, String> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(final Map<String, String> tags) {
+    public void setTags(final List<Tag> tags) {
         this.tags = tags;
     }
 

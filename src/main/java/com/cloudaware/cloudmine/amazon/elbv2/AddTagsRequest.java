@@ -1,23 +1,24 @@
 package com.cloudaware.cloudmine.amazon.elbv2;
 
+import com.amazonaws.services.elasticloadbalancingv2.model.Tag;
+
 import java.util.List;
-import java.util.Map;
 
 /**
  * User: tolstikov
  * Date: 2/18/16
  */
-public final class TagsRequest {
+public final class AddTagsRequest {
 
     private List<String> arns;
-    private Map<String, String> tags;
+    private List<Tag> tags;
 
-    public TagsRequest(final List<String> arns, final Map<String, String> tags) {
+    public AddTagsRequest(final List<String> arns, final List<Tag> tags) {
         this.arns = arns;
         this.tags = tags;
     }
 
-    public TagsRequest() {
+    public AddTagsRequest() {
     }
 
     public List<String> getArns() {
@@ -28,11 +29,11 @@ public final class TagsRequest {
         this.arns = arns;
     }
 
-    public Map<String, String> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(final Map<String, String> tags) {
+    public void setTags(final List<Tag> tags) {
         this.tags = tags;
     }
 }

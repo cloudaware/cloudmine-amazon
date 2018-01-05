@@ -1,6 +1,8 @@
 package com.cloudaware.cloudmine.amazon.emr;
 
-import java.util.Map;
+import com.amazonaws.services.elasticmapreduce.model.Tag;
+
+import java.util.List;
 
 /**
  * User: tolstikov
@@ -8,30 +10,21 @@ import java.util.Map;
  */
 public final class TagsRequest {
 
-    private String clusterId;
-    private Map<String, String> tags;
+    private List<Tag> tags;
 
-    public TagsRequest(final String clusterId, final Map<String, String> tags) {
-        this.clusterId = clusterId;
+    public TagsRequest(final List<Tag> tags) {
+
         this.tags = tags;
     }
 
     public TagsRequest() {
     }
 
-    public String getClusterId() {
-        return clusterId;
-    }
-
-    public void setClusterId(final String clusterId) {
-        this.clusterId = clusterId;
-    }
-
-    public Map<String, String> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(final Map<String, String> tags) {
+    public void setTags(final List<Tag> tags) {
         this.tags = tags;
     }
 }

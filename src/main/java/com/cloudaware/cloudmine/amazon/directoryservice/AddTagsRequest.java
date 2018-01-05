@@ -1,6 +1,6 @@
-package com.cloudaware.cloudmine.amazon.elasticsearch;
+package com.cloudaware.cloudmine.amazon.directoryservice;
 
-import com.amazonaws.services.elasticsearch.model.Tag;
+import com.amazonaws.services.directory.model.Tag;
 
 import java.util.List;
 
@@ -8,15 +8,15 @@ import java.util.List;
  * User: tolstikov
  * Date: 2/18/16
  */
-public final class TagsRequest {
+public final class AddTagsRequest {
 
     private List<Tag> tags;
 
-    public TagsRequest(final List<Tag> tags) {
+    public AddTagsRequest(final List<Tag> tags) {
         this.tags = tags;
     }
 
-    public TagsRequest() {
+    public AddTagsRequest() {
     }
 
     public List<Tag> getTags() {

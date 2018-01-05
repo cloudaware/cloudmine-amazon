@@ -39,10 +39,8 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
-import com.google.common.collect.Lists;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * User: urmuzov
@@ -286,10 +284,10 @@ public final class RdsApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "tags.get",
-            path = "{region}/tags/ARN"
+            name = "resources.tags.get",
+            path = "{region}/resources/ARN/tags"
     )
-    public TagsResponse tagsGet(
+    public TagsResponse reosurcesTagsGet(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
             @Named("arn") final String arn
@@ -302,41 +300,38 @@ public final class RdsApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.POST,
-            name = "tags.add",
-            path = "{region}/tags/add"
+            name = "resources.tags.add",
+            path = "{region}/resources/ARN/tags"
     )
-    public AmazonResponse tagsAdd(
+    public AmazonResponse resourcesTagsAdd(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
+            @Named("arn") final String arn,
             final TagsRequest tagsRequest
     ) throws AmazonUnparsedException {
         return RdsCaller.get(AddTagsToResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, request, response) -> {
-            final List<com.amazonaws.services.rds.model.Tag> tags = Lists.newArrayList();
-            for (final Map.Entry<String, String> e : tagsRequest.getTags().entrySet()) {
-                tags.add(new com.amazonaws.services.rds.model.Tag().withKey(e.getKey()).withValue(e.getValue()));
-            }
-
             client.addTagsToResource(
-                    request.withTags(tags)
-                            .withResourceName(tagsRequest.getResourceArn())
+                    request.withTags(tagsRequest.getTags())
+                            .withResourceName(arn)
             );
         });
     }
 
     @ApiMethod(
-            httpMethod = ApiMethod.HttpMethod.POST,
-            name = "tags.remove",
-            path = "{region}/tags/remove"
+            httpMethod = ApiMethod.HttpMethod.DELETE,
+            name = "resources.tags.remove",
+            path = "{region}/resources/ARN/tags"
     )
-    public AmazonResponse tagsRemove(
+    public AmazonResponse resourcesTagsRemove(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            final RemoveTagsRequest tagsRequest
+            @Named("arn") final String arn,
+            @Named("tagKey") final List<String> tagKeys
     ) throws AmazonUnparsedException {
         return RdsCaller.get(RemoveTagsFromResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, request, response) -> {
             client.removeTagsFromResource(
-                    request.withTagKeys(tagsRequest.getTagKeys())
-                            .withResourceName(tagsRequest.getResourceArn())
+                    request.withTagKeys(tagKeys)
+                            .withResourceName(arn)
             );
         });
     }

@@ -1,6 +1,6 @@
-package com.cloudaware.cloudmine.amazon.elasticsearch;
+package com.cloudaware.cloudmine.amazon.dynamodbaccelerator;
 
-import com.amazonaws.services.elasticsearch.model.Tag;
+import com.amazonaws.services.dax.model.Tag;
 
 import java.util.List;
 
@@ -8,15 +8,15 @@ import java.util.List;
  * User: tolstikov
  * Date: 2/18/16
  */
-public final class TagsRequest {
+public final class TagTagsRequest {
 
     private List<Tag> tags;
 
-    public TagsRequest(final List<Tag> tags) {
+    public TagTagsRequest(final List<Tag> tags) {
         this.tags = tags;
     }
 
-    public TagsRequest() {
+    public TagTagsRequest() {
     }
 
     public List<Tag> getTags() {

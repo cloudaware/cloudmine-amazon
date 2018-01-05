@@ -14,7 +14,6 @@ import com.amazonaws.services.dax.model.DescribeSubnetGroupsRequest;
 import com.amazonaws.services.dax.model.DescribeSubnetGroupsResult;
 import com.amazonaws.services.dax.model.ListTagsRequest;
 import com.amazonaws.services.dax.model.ListTagsResult;
-import com.amazonaws.services.dax.model.Tag;
 import com.amazonaws.services.dax.model.TagResourceRequest;
 import com.amazonaws.services.dax.model.UntagResourceRequest;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
@@ -26,7 +25,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
-import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -164,10 +162,10 @@ public final class DynamoDbAcceleratorApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "tags.get",
-            path = "{region}/tags/ARN"
+            name = "resources.tags.get",
+            path = "{region}/resources/ARN/tags"
     )
-    public TagsResponse tagsGet(
+    public TagsResponse resourcesTagsGet(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
             @Named("page") @Nullable final String page,
@@ -182,38 +180,33 @@ public final class DynamoDbAcceleratorApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.POST,
-            name = "tags.create",
-            path = "{region}/tags/create"
+            name = "resources.tags.tag",
+            path = "{region}/resources/ARN/tags"
     )
-    public AmazonResponse createTags(
+    public AmazonResponse resourcesTagsTag(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            final TagsRequest request
+            @Named("arn") final String arn,
+            final TagTagsRequest request
     ) throws AmazonUnparsedException {
         return DynamoDbAcceleratorCaller.get(TagResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            final List<Tag> tags = Lists.newArrayList();
-            for (final String key : request.getTags().keySet()) {
-                final Tag tag = new Tag();
-                tag.setKey(key);
-                tag.setValue(request.getTags().get(key));
-                tags.add(tag);
-            }
-            client.tagResource(r.withResourceName(request.getArn()).withTags(tags));
+            client.tagResource(r.withResourceName(arn).withTags(request.getTags()));
         });
     }
 
     @ApiMethod(
-            httpMethod = ApiMethod.HttpMethod.POST,
-            name = "tags.delete",
-            path = "{region}/tags/detele"
+            httpMethod = ApiMethod.HttpMethod.DELETE,
+            name = "resources.tags.untag",
+            path = "{region}/resources/ARN/tags"
     )
-    public AmazonResponse tagsDelete(
+    public AmazonResponse resourcesTagsUntag(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            final TagsRequest request
+            @Named("arn") final String arn,
+            @Named("tagKey") final List<String> tagKeys
     ) throws AmazonUnparsedException {
         return DynamoDbAcceleratorCaller.get(UntagResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            client.untagResource(r.withResourceName(request.getArn()).withTagKeys(request.getTags().keySet()));
+            client.untagResource(r.withResourceName(arn).withTagKeys(tagKeys));
         });
     }
 }

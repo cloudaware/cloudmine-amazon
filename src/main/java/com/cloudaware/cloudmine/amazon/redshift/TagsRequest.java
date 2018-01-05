@@ -1,6 +1,8 @@
 package com.cloudaware.cloudmine.amazon.redshift;
 
-import java.util.Map;
+import com.amazonaws.services.redshift.model.Tag;
+
+import java.util.List;
 
 /**
  * User: tolstikov
@@ -8,30 +10,21 @@ import java.util.Map;
  */
 public final class TagsRequest {
 
-    private String arn;
-    private Map<String, String> tags;
+    private List<Tag> tags;
 
-    public TagsRequest(final String arn, final Map<String, String> tags) {
-        this.arn = arn;
+    public TagsRequest(final List<Tag> tags) {
+
         this.tags = tags;
     }
 
     public TagsRequest() {
     }
 
-    public String getArn() {
-        return arn;
-    }
-
-    public void setArn(final String arn) {
-        this.arn = arn;
-    }
-
-    public Map<String, String> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(final Map<String, String> tags) {
+    public void setTags(final List<Tag> tags) {
         this.tags = tags;
     }
 }

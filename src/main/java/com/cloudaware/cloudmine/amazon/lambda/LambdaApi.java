@@ -26,6 +26,8 @@ import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
 
+import java.util.List;
+
 /**
  * User: urmuzov
  * Date: 03.23.17
@@ -167,8 +169,8 @@ public final class LambdaApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "tags.get",
-            path = "{region}/tags/ARN"
+            name = "resources.tags.get",
+            path = "{region}/resources/ARN/tags"
     )
     public TagsResponse tagsGet(
             @Named("credentials") final String credentials,
@@ -186,31 +188,33 @@ public final class LambdaApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.POST,
-            name = "tags.create",
-            path = "{region}/tags/create"
+            name = "resources.tags.tag",
+            path = "{region}/resources/ARN/tags"
     )
     public AmazonResponse createTags(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
+            @Named("arn") final String arn,
             final TagsRequest request
     ) throws AmazonUnparsedException {
         return LambdaCaller.get(TagResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            client.tagResource(r.withResource(request.getArn()).withTags(request.getTags()));
+            client.tagResource(r.withResource(arn).withTags(request.getTags()));
         });
     }
 
     @ApiMethod(
-            httpMethod = ApiMethod.HttpMethod.POST,
-            name = "tags.delete",
-            path = "{region}/tags/detele"
+            httpMethod = ApiMethod.HttpMethod.DELETE,
+            name = "resources.tags.untag",
+            path = "{region}/resources/ARN/tags"
     )
     public AmazonResponse tagsDelete(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            final TagsRequest request
+            @Named("arn") final String arn,
+            @Named("tagKey") final List<String> tagKeys
     ) throws AmazonUnparsedException {
         return LambdaCaller.get(UntagResourceRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            client.untagResource(r.withResource(request.getArn()).withTagKeys(request.getTags().keySet()));
+            client.untagResource(r.withResource(arn).withTagKeys(tagKeys));
         });
     }
 }

@@ -10,7 +10,6 @@ import com.amazonaws.services.elasticfilesystem.model.DescribeMountTargetsReques
 import com.amazonaws.services.elasticfilesystem.model.DescribeMountTargetsResult;
 import com.amazonaws.services.elasticfilesystem.model.DescribeTagsRequest;
 import com.amazonaws.services.elasticfilesystem.model.DescribeTagsResult;
-import com.amazonaws.services.elasticfilesystem.model.Tag;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
 import com.cloudaware.cloudmine.amazon.Constants;
@@ -20,7 +19,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
-import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -113,7 +111,7 @@ public final class EfsApi {
             name = "fileSystems.tags.list",
             path = "{region}/file-systems/{fileSystemId}/tags"
     )
-    public TagsResponse tagsList(
+    public TagsResponse fileSystemTagsList(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
             @Named("fileSystemId") final String fileSystemId,
@@ -133,37 +131,32 @@ public final class EfsApi {
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.POST,
             name = "fileSystems.tags.create",
-            path = "{region}/fileSystems/tags/create"
+            path = "{region}/file-systems/{fileSystemId}/tags"
     )
-    public AmazonResponse createTags(
+    public AmazonResponse fileSystemagsCreate(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
+            @Named("fileSystemId") final String fileSystemId,
             final TagsRequest request
     ) throws AmazonUnparsedException {
         return EfsCaller.get(CreateTagsRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            final List<Tag> tags = Lists.newArrayList();
-            for (final String key : request.getTags().keySet()) {
-                final Tag tag = new Tag();
-                tag.setKey(key);
-                tag.setValue(request.getTags().get(key));
-                tags.add(tag);
-            }
-            client.createTags(r.withFileSystemId(request.getFileSystemId()).withTags(tags));
+            client.createTags(r.withFileSystemId(fileSystemId).withTags(request.getTags()));
         });
     }
 
     @ApiMethod(
-            httpMethod = ApiMethod.HttpMethod.POST,
+            httpMethod = ApiMethod.HttpMethod.DELETE,
             name = "fileSystems.tags.delete",
-            path = "{region}/fileSystems/tags/detele"
+            path = "{region}/file-systems/{fileSystemId}/tags"
     )
-    public AmazonResponse tagsDelete(
+    public AmazonResponse fileSystemTagsDelete(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            final TagsRequest request
+            @Named("fileSystemId") final String fileSystemId,
+            @Named("tagKey") final List<String> tagKeys
     ) throws AmazonUnparsedException {
         return EfsCaller.get(DeleteTagsRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
-            client.deleteTags(r.withFileSystemId(request.getFileSystemId()).withTagKeys(request.getTags().keySet()));
+            client.deleteTags(r.withFileSystemId(fileSystemId).withTagKeys(tagKeys));
         });
     }
 }

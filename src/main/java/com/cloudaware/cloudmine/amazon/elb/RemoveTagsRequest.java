@@ -1,23 +1,23 @@
 package com.cloudaware.cloudmine.amazon.elb;
 
+import com.amazonaws.services.elasticloadbalancing.model.TagKeyOnly;
 import com.google.common.collect.Lists;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * User: tolstikov
  * Date: 7/10/13
  * Time: 4:12 PM
  */
-public final class TagsRequest {
+public final class RemoveTagsRequest {
     private List<String> loadBalancerNames;
-    private Map<String, String> tags;
+    private List<TagKeyOnly> tags;
 
-    public TagsRequest() {
+    public RemoveTagsRequest() {
     }
 
-    public TagsRequest(final List<String> loadBalancerNames, final Map<String, String> tags) {
+    public RemoveTagsRequest(final List<String> loadBalancerNames, final List<TagKeyOnly> tags) {
         this.loadBalancerNames = loadBalancerNames;
         this.tags = tags;
     }
@@ -30,7 +30,7 @@ public final class TagsRequest {
         this.loadBalancerNames = loadBalancerNames;
     }
 
-    public TagsRequest withLoadBalancerNames(final String... loadBalancerNamesIn) {
+    public RemoveTagsRequest withLoadBalancerNames(final String... loadBalancerNamesIn) {
         if (this.loadBalancerNames == null) {
             this.loadBalancerNames = Lists.newArrayList();
         }
@@ -40,11 +40,11 @@ public final class TagsRequest {
         return this;
     }
 
-    public Map<String, String> getTags() {
+    public List<TagKeyOnly> getTags() {
         return tags;
     }
 
-    public void setTags(final Map<String, String> tags) {
+    public void setTags(final List<TagKeyOnly> tags) {
         this.tags = tags;
     }
 }
