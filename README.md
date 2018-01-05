@@ -275,6 +275,8 @@ To build client library:
 
 # Changelog
 
+* 1.0.30 - Batch added
+* 1.0.29 - CloudWatch Logs added
 * 1.0.28 - API Gateway added
 * 1.0.27 - Glue added
 * 1.0.26 - StepFunctions added
