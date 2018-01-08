@@ -136,6 +136,8 @@ public class AmazonResponse<T extends AmazonWebServiceResult> {
                     || "PipelineDeletedException".equals(errorCode)
                     || "PipelineNotFoundException".equals(errorCode)
                     || "ClientException".equals(errorCode) && "ds:DescribeEventTopics".equals(action) && errorMessage.contains("is in Deleting state")
+                    || "ExecutionDoesNotExist".equals(errorCode)
+                    || "DeploymentDoesNotExistException".equals(errorCode)
                     ) {
                 return new AmazonException(AmazonException.Category.OBJECT_NOT_FOUND, action, ex);
             }
