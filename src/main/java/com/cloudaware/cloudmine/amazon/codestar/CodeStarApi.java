@@ -57,10 +57,10 @@ public final class CodeStarApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "project.get",
+            name = "projects.get",
             path = "{region}/projects/{projectId}"
     )
-    public ProjectResponse projectGet(
+    public ProjectResponse projectsGet(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
             @Named("projectId") final String projectId
@@ -141,10 +141,10 @@ public final class CodeStarApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "userProfile.get",
+            name = "userProfiles.get",
             path = "{region}/user-profiles/{userArn}"
     )
-    public UserProfileResponse userProfileGet(
+    public UserProfileResponse userProfilesGet(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
             @Named("userArn") final String userArn

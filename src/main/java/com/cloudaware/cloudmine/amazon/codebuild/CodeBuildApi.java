@@ -67,7 +67,7 @@ public final class CodeBuildApi {
     public ProjectsResponse projectsList(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            @Named("projectNames") final List<String> projectNames
+            @Named("projectName") final List<String> projectNames
     ) throws AmazonUnparsedException {
         return CodeBuildCaller.get(BatchGetProjectsRequest.class, ProjectsResponse.class, credentials, region).execute((client, request, response) -> {
             final BatchGetProjectsResult result = client.batchGetProjects(request.withNames(projectNames));
@@ -101,7 +101,7 @@ public final class CodeBuildApi {
     public BuildsResponse buildsList(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            @Named("buildIds") final List<String> buildIds
+            @Named("buildId") final List<String> buildIds
     ) throws AmazonUnparsedException {
         return CodeBuildCaller.get(BatchGetBuildsRequest.class, BuildsResponse.class, credentials, region).execute((client, request, response) -> {
             final BatchGetBuildsResult result = client.batchGetBuilds(request.withIds(buildIds));
