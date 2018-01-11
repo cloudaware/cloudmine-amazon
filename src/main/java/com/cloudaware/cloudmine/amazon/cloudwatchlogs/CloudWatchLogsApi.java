@@ -10,6 +10,8 @@ import com.amazonaws.services.logs.model.DescribeSubscriptionFiltersRequest;
 import com.amazonaws.services.logs.model.DescribeSubscriptionFiltersResult;
 import com.amazonaws.services.logs.model.ListTagsLogGroupRequest;
 import com.amazonaws.services.logs.model.ListTagsLogGroupResult;
+import com.amazonaws.services.logs.model.TagLogGroupRequest;
+import com.amazonaws.services.logs.model.UntagLogGroupRequest;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
@@ -18,6 +20,8 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
+
+import java.util.List;
 
 @Api(
         name = "cloudwatchlogs",
@@ -83,15 +87,45 @@ public final class CloudWatchLogsApi {
     public TagsResponse logGroupsTagsList(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
-            @Named("logGroupName") final String logGroupName,
-            @Named("page") @Nullable final String page
+            @Named("logGroupName") final String logGroupName
     ) throws AmazonUnparsedException {
         return CloudWatchLogsCaller.get(ListTagsLogGroupRequest.class, TagsResponse.class, credentials, region).execute((client, request, response) -> {
             final ListTagsLogGroupResult result = client.listTagsLogGroup(
                     request.withLogGroupName(logGroupName)
             );
             response.setTags(result.getTags());
-            response.setNextPage(page);
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "logGroups.tags.tag",
+            path = "{region}/log-groups/{logGroupName}/tags"
+    )
+    public TagsResponse logGroupsTagsTag(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("logGroupName") final String logGroupName,
+            final TagsRequest tagsRequest
+    ) throws AmazonUnparsedException {
+        return CloudWatchLogsCaller.get(TagLogGroupRequest.class, TagsResponse.class, credentials, region).execute((client, request, response) -> {
+            client.tagLogGroup(request.withLogGroupName(logGroupName).withTags(tagsRequest.getTags()));
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.DELETE,
+            name = "logGroups.tags.untag",
+            path = "{region}/log-groups/{logGroupName}/tags"
+    )
+    public TagsResponse logGroupsTagsUntag(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("logGroupName") final String logGroupName,
+            @Named("tagKey") final List<String> tagKeys
+    ) throws AmazonUnparsedException {
+        return CloudWatchLogsCaller.get(UntagLogGroupRequest.class, TagsResponse.class, credentials, region).execute((client, request, response) -> {
+            client.untagLogGroup(request.withLogGroupName(logGroupName).withTags(tagKeys));
         });
     }
 
