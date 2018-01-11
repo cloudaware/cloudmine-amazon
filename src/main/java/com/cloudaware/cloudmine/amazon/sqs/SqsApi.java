@@ -2,8 +2,13 @@ package com.cloudaware.cloudmine.amazon.sqs;
 
 import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
+import com.amazonaws.services.sqs.model.ListQueueTagsRequest;
+import com.amazonaws.services.sqs.model.ListQueueTagsResult;
 import com.amazonaws.services.sqs.model.ListQueuesRequest;
 import com.amazonaws.services.sqs.model.ListQueuesResult;
+import com.amazonaws.services.sqs.model.TagQueueRequest;
+import com.amazonaws.services.sqs.model.UntagQueueRequest;
+import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
@@ -11,6 +16,8 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
+
+import java.util.List;
 
 /**
  * User: urmuzov
@@ -61,6 +68,56 @@ public final class SqsApi {
         return SqsCaller.get(GetQueueAttributesRequest.class, AttributesResponse.class, credentials, region).execute((client, request, response) -> {
             final GetQueueAttributesResult result = client.getQueueAttributes(request.withQueueUrl(queueUrl).withAttributeNames("All"));
             response.setAttributes(result.getAttributes());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "queues.tags.list",
+            path = "{region}/queues/QUEUE_URL/tags"
+    )
+    public TagsResponse queueTagsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("queueUrl") final String queueUrl
+    ) throws AmazonUnparsedException {
+        return SqsCaller.get(ListQueueTagsRequest.class, TagsResponse.class, credentials, region).execute((client, r, response) -> {
+            final ListQueueTagsResult result = client.listQueueTags(
+                    r.withQueueUrl(queueUrl)
+            );
+            response.setTags(result.getTags());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "queues.tags.tag",
+            path = "{region}/queues/QUEUE_URL/tags"
+    )
+    public AmazonResponse queueTagsTag(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("queueUrl") final String queueUrl,
+            final TagsRequest request
+    ) throws AmazonUnparsedException {
+        return SqsCaller.get(TagQueueRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
+            client.tagQueue(r.withQueueUrl(queueUrl).withTags(request.getTags()));
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.DELETE,
+            name = "queues.tags.untag",
+            path = "{region}/queues/QUEUE_URL/tags"
+    )
+    public AmazonResponse queueTagsUntag(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("queueUrl") final String queueUrl,
+            @Named("tagKey") final List<String> tagKeys
+    ) throws AmazonUnparsedException {
+        return SqsCaller.get(UntagQueueRequest.class, AmazonResponse.class, credentials, region).execute((client, r, response) -> {
+            client.untagQueue(r.withQueueUrl(queueUrl).withTagKeys(tagKeys));
         });
     }
 }
