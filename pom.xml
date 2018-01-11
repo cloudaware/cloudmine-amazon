@@ -7,7 +7,7 @@
 
     <groupId>com.cloudaware.cloudmine</groupId>
     <artifactId>cloudmine-amazon-server</artifactId>
-    <version>1.0.30</version>
+    <version>1.0.31</version>
     <name>cloudmine-amazon-server</name>
 
     <properties>

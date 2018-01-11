@@ -55,10 +55,10 @@ public final class CodeCommitApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "repository.get",
+            name = "repositories.get",
             path = "{region}/repositories/{repositoryName}"
     )
-    public RepositoryResponse repositoryGet(
+    public RepositoryResponse repositoriesGet(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
             @Named("repositoryName") final String repositoryName
@@ -93,10 +93,10 @@ public final class CodeCommitApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "repositories.branch.get",
+            name = "repositories.branches.get",
             path = "{region}/repositories/{repositoryName}/branches/{branchName}"
     )
-    public BranchResponse repositoriesBranchGet(
+    public BranchResponse repositoriesBranchesGet(
             @Named("credentials") final String credentials,
             @Named("region") final String region,
             @Named("repositoryName") final String repositoryName,

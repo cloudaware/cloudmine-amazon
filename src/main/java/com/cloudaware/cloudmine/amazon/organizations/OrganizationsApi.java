@@ -46,10 +46,10 @@ public final class OrganizationsApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "organization.get",
-            path = "organization"
+            name = "organizations.get",
+            path = "organizations"
     )
-    public OrganizationResponse organizationGet(
+    public OrganizationResponse organizationsGet(
             @Named("credentials") final String credentials
     ) throws AmazonUnparsedException {
         return OrganizationsCaller.get(DescribeOrganizationRequest.class, OrganizationResponse.class, credentials).execute((client, request, response) -> {
