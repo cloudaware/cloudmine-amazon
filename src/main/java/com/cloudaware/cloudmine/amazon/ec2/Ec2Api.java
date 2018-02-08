@@ -673,11 +673,13 @@ public final class Ec2Api {
     )
     public NatGatewaysResponse natGatewaysList(
             @Named("credentials") final String credentials,
-            @Named("region") final String region
+            @Named("region") final String region,
+            @Named("page") @Nullable final String page
     ) throws AmazonUnparsedException {
         return Ec2Caller.get(DescribeNatGatewaysRequest.class, NatGatewaysResponse.class, credentials, region).execute((client, request, response) -> {
-            final DescribeNatGatewaysResult result = client.describeNatGateways(request);
+            final DescribeNatGatewaysResult result = client.describeNatGateways(request.withNextToken(page));
             response.setNatGateways(result.getNatGateways());
+            response.setNextPage(page);
         });
     }
 }
