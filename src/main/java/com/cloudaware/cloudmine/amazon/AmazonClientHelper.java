@@ -38,6 +38,8 @@ import com.amazonaws.services.codestar.AWSCodeStar;
 import com.amazonaws.services.codestar.AWSCodeStarClient;
 import com.amazonaws.services.config.AmazonConfig;
 import com.amazonaws.services.config.AmazonConfigClient;
+import com.amazonaws.services.costexplorer.AWSCostExplorer;
+import com.amazonaws.services.costexplorer.AWSCostExplorerClient;
 import com.amazonaws.services.datapipeline.DataPipeline;
 import com.amazonaws.services.datapipeline.DataPipelineClient;
 import com.amazonaws.services.dax.AmazonDax;
@@ -197,6 +199,10 @@ public final class AmazonClientHelper {
         }
         if ("athena".equals(endpointPrefix) && "ap-southeast-2".equals(region)) {
             // These regions don't have "athena" in available endpoints, but they have the service
+            return;
+        }
+        if ("ce".equals(endpointPrefix) && "us-east-1".equals(region)) {
+            // These regions don't have "ce" in available endpoints, but they have the service
             return;
         }
         if ("guardduty".equals(endpointPrefix)
@@ -781,6 +787,18 @@ public final class AmazonClientHelper {
     public ClientWrapper<AmazonCodeDeploy> getCodeDeploy(final String region) {
         checkRegion(region);
         final AmazonCodeDeploy client = AmazonCodeDeployClient.builder()
+                .withClientConfiguration(config)
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withRegion(region)
+                .build();
+        checkEndpoint(region, (AmazonWebServiceClient) client);
+        return new ClientWrapper<>(client);
+    }
+
+    public ClientWrapper<AWSCostExplorer> getCostExplorer() {
+        final String region = "us-east-1";
+        checkRegion(region);
+        final AWSCostExplorer client = AWSCostExplorerClient.builder()
                 .withClientConfiguration(config)
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion(region)
