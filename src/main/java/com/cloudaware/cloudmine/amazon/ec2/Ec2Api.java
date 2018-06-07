@@ -8,10 +8,14 @@ import com.amazonaws.services.ec2.model.DescribeAccountAttributesRequest;
 import com.amazonaws.services.ec2.model.DescribeAccountAttributesResult;
 import com.amazonaws.services.ec2.model.DescribeAddressesRequest;
 import com.amazonaws.services.ec2.model.DescribeAddressesResult;
+import com.amazonaws.services.ec2.model.DescribeClassicLinkInstancesRequest;
+import com.amazonaws.services.ec2.model.DescribeClassicLinkInstancesResult;
 import com.amazonaws.services.ec2.model.DescribeCustomerGatewaysRequest;
 import com.amazonaws.services.ec2.model.DescribeCustomerGatewaysResult;
 import com.amazonaws.services.ec2.model.DescribeDhcpOptionsRequest;
 import com.amazonaws.services.ec2.model.DescribeDhcpOptionsResult;
+import com.amazonaws.services.ec2.model.DescribeEgressOnlyInternetGatewaysRequest;
+import com.amazonaws.services.ec2.model.DescribeEgressOnlyInternetGatewaysResult;
 import com.amazonaws.services.ec2.model.DescribeFlowLogsRequest;
 import com.amazonaws.services.ec2.model.DescribeFlowLogsResult;
 import com.amazonaws.services.ec2.model.DescribeImageAttributeRequest;
@@ -52,6 +56,24 @@ import com.amazonaws.services.ec2.model.DescribeVolumeStatusRequest;
 import com.amazonaws.services.ec2.model.DescribeVolumeStatusResult;
 import com.amazonaws.services.ec2.model.DescribeVolumesRequest;
 import com.amazonaws.services.ec2.model.DescribeVolumesResult;
+import com.amazonaws.services.ec2.model.DescribeVpcAttributeRequest;
+import com.amazonaws.services.ec2.model.DescribeVpcAttributeResult;
+import com.amazonaws.services.ec2.model.DescribeVpcClassicLinkRequest;
+import com.amazonaws.services.ec2.model.DescribeVpcClassicLinkResult;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointConnectionNotificationsRequest;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointConnectionNotificationsResult;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointConnectionsRequest;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointConnectionsResult;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointServiceConfigurationsRequest;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointServiceConfigurationsResult;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointServicePermissionsRequest;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointServicePermissionsResult;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointServicesRequest;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointServicesResult;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointsRequest;
+import com.amazonaws.services.ec2.model.DescribeVpcEndpointsResult;
+import com.amazonaws.services.ec2.model.DescribeVpcPeeringConnectionsRequest;
+import com.amazonaws.services.ec2.model.DescribeVpcPeeringConnectionsResult;
 import com.amazonaws.services.ec2.model.DescribeVpcsRequest;
 import com.amazonaws.services.ec2.model.DescribeVpcsResult;
 import com.amazonaws.services.ec2.model.DescribeVpnConnectionsRequest;
@@ -98,6 +120,8 @@ import java.util.List;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class Ec2Api {
+
+    private static final int MAX_RESULTS = 1000;
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
@@ -608,6 +632,22 @@ public final class Ec2Api {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
+            name = "egressOnlyInternetGateways.list",
+            path = "{region}/egress-only-internet-gateways"
+    )
+    public EgressOnlyInternetGatewaysResponse egressOnlyInternetGatewaysList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeEgressOnlyInternetGatewaysRequest.class, EgressOnlyInternetGatewaysResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeEgressOnlyInternetGatewaysResult result = client.describeEgressOnlyInternetGateways(request.withNextToken(page));
+            response.setEgressOnlyInternetGateways(result.getEgressOnlyInternetGateways());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
             name = "vpcs.list",
             path = "{region}/vpcs"
     )
@@ -618,6 +658,178 @@ public final class Ec2Api {
         return Ec2Caller.get(DescribeVpcsRequest.class, VpcsResponse.class, credentials, region).execute((client, request, response) -> {
             final DescribeVpcsResult result = client.describeVpcs(request);
             response.setVpcs(result.getVpcs());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "vpcs.attributes.get",
+            path = "{region}/vpcs/{vpcId}/attributes/{attributeName}"
+    )
+    public VpcAttributeResponse vpcsAttributesGet(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("vpcId") final String vpcId,
+            @Named("attributeName") final String attributeName
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeVpcAttributeRequest.class, VpcAttributeResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpcAttributeResult result = client.describeVpcAttribute(request.withVpcId(vpcId).withAttribute(attributeName));
+            response.setEnableDnsSupport(result.getEnableDnsSupport());
+            response.setEnableDnsHostnames(result.getEnableDnsHostnames());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "vpcClassicLinks.list",
+            path = "{region}/vpc-classic-links"
+    )
+    public VpcClassicLinksResponse vpcClassicLinksList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeVpcClassicLinkRequest.class, VpcClassicLinksResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpcClassicLinkResult result = client.describeVpcClassicLink(request);
+            response.setVpcClassicLinks(result.getVpcs());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "classicLinkInstances.list",
+            path = "{region}/classic-link-instances"
+    )
+    public ClassicLinkInstancesResponse classicLinkInstancesList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeClassicLinkInstancesRequest.class, ClassicLinkInstancesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeClassicLinkInstancesResult result = client.describeClassicLinkInstances(request.withNextToken(page));
+            response.setInstances(result.getInstances());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "vpcEndpoints.list",
+            path = "{region}/vpc-endpoints"
+    )
+    public VpcEndpointsResponse vpcEndpointsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeVpcEndpointsRequest.class, VpcEndpointsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpcEndpointsResult result = client.describeVpcEndpoints(request.withNextToken(page).withMaxResults(MAX_RESULTS));
+            response.setVpcEndpoints(result.getVpcEndpoints());
+            response.setNextPage(result.getNextToken());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "vpcEndpointConnections.list",
+            path = "{region}/vpc-endpoint-connections"
+    )
+    public VpcEndpointConnectionsResponse vpcEndpointConnectionsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeVpcEndpointConnectionsRequest.class, VpcEndpointConnectionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpcEndpointConnectionsResult result = client.describeVpcEndpointConnections(request.withNextToken(page).withMaxResults(MAX_RESULTS));
+            response.setVpcEndpointConnections(result.getVpcEndpointConnections());
+            response.setNextPage(result.getNextToken());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "vpcEndpointConnectionNotifications.list",
+            path = "{region}/vpc-endpoint-connection-notifications"
+    )
+    public VpcEndpointConnectionNotificationsResponse vpcEndpointConnectionNotificationsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeVpcEndpointConnectionNotificationsRequest.class, VpcEndpointConnectionNotificationsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpcEndpointConnectionNotificationsResult result = client.describeVpcEndpointConnectionNotifications(request.withNextToken(page).withMaxResults(MAX_RESULTS));
+            response.setNotifications(result.getConnectionNotificationSet());
+            response.setNextPage(result.getNextToken());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "vpcEndpointServiceConfigurations.list",
+            path = "{region}/vpc-endpoint-service-configurations"
+    )
+    public VpcEndpointServiceConfigurationsResponse vpcEndpointServiceConfigurationsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeVpcEndpointServiceConfigurationsRequest.class, VpcEndpointServiceConfigurationsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpcEndpointServiceConfigurationsResult result = client.describeVpcEndpointServiceConfigurations(request.withNextToken(page).withMaxResults(MAX_RESULTS));
+            response.setConfigurations(result.getServiceConfigurations());
+            response.setNextPage(result.getNextToken());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "vpcEndpointServices.permissions.list",
+            path = "{region}/vpc-endpoint-services/{serviceId}/permissions"
+    )
+    public VpcEndpointServicePermissionsResponse vpcEndpointServicesPermissionsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("serviceId") final String serviceId,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeVpcEndpointServicePermissionsRequest.class, VpcEndpointServicePermissionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpcEndpointServicePermissionsResult result = client.describeVpcEndpointServicePermissions(
+                    request
+                            .withNextToken(page)
+                            .withMaxResults(MAX_RESULTS)
+                            .withServiceId(serviceId)
+            );
+            response.setPermissions(result.getAllowedPrincipals());
+            response.setNextPage(result.getNextToken());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "vpcEndpointServices.list",
+            path = "{region}/vpc-endpoint-services"
+    )
+    public VpcEndpointServicesResponse vpcEndpointServicesList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeVpcEndpointServicesRequest.class, VpcEndpointServicesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpcEndpointServicesResult result = client.describeVpcEndpointServices(request.withNextToken(page).withMaxResults(MAX_RESULTS));
+            response.setServices(result.getServiceDetails());
+            response.setNextPage(result.getNextToken());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "vpcPeeringConnections.list",
+            path = "{region}/vpc-peering-connections"
+    )
+    public VpcPeeringConnectionsResponse vpcPeeringConnectionsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeVpcPeeringConnectionsRequest.class, VpcPeeringConnectionsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeVpcPeeringConnectionsResult result = client.describeVpcPeeringConnections(request);
+            response.setConnections(result.getVpcPeeringConnections());
         });
     }
 
