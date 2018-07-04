@@ -276,6 +276,7 @@ To build client library:
 
 # Changelog
 
+* 1.0.46 - AWS Certificate Manager added
 * 1.0.45 - Workspaces actualized
 * 1.0.44 - S3 requests added
 * 1.0.43 - IAM SSH Public Keys filter added
