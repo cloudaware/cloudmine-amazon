@@ -7,7 +7,7 @@
 
     <groupId>com.cloudaware.cloudmine</groupId>
     <artifactId>cloudmine-amazon-server</artifactId>
-    <version>1.0.44</version>
+    <version>1.0.46</version>
     <name>cloudmine-amazon-server</name>
 
     <properties>
@@ -328,6 +328,11 @@
             <version>${aws-java-sdk.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-acm</artifactId>
+            <version>${aws-java-sdk.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <version>${guice.version}</version>
@@ -531,6 +536,7 @@
                         <param>com.cloudaware.cloudmine.amazon.dynamodbaccelerator.DynamoDbAcceleratorApi</param>
                         <param>com.cloudaware.cloudmine.amazon.iot.IotApi</param>
                         <param>com.cloudaware.cloudmine.amazon.ecr.EcrApi</param>
+                        <param>com.cloudaware.cloudmine.amazon.certificatemanager.CertificateManagerApi</param>
                     </apis>
                 </configuration>
                 <executions>
