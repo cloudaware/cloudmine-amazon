@@ -276,6 +276,7 @@ To build client library:
 
 # Changelog
 
+* 1.0.66 - EC2 Spot added, NAT Gateways page fix
 * 1.0.65 - Kinesis ignore invalid dates
 * 1.0.64 - Change google-api-client version
 * 1.0.63 - CloudWatchEvents added

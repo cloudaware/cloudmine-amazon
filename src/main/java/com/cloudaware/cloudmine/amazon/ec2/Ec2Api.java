@@ -50,6 +50,14 @@ import com.amazonaws.services.ec2.model.DescribeSnapshotAttributeRequest;
 import com.amazonaws.services.ec2.model.DescribeSnapshotAttributeResult;
 import com.amazonaws.services.ec2.model.DescribeSnapshotsRequest;
 import com.amazonaws.services.ec2.model.DescribeSnapshotsResult;
+import com.amazonaws.services.ec2.model.DescribeSpotDatafeedSubscriptionRequest;
+import com.amazonaws.services.ec2.model.DescribeSpotDatafeedSubscriptionResult;
+import com.amazonaws.services.ec2.model.DescribeSpotFleetInstancesRequest;
+import com.amazonaws.services.ec2.model.DescribeSpotFleetInstancesResult;
+import com.amazonaws.services.ec2.model.DescribeSpotFleetRequestsRequest;
+import com.amazonaws.services.ec2.model.DescribeSpotFleetRequestsResult;
+import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsRequest;
+import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsResult;
 import com.amazonaws.services.ec2.model.DescribeSubnetsRequest;
 import com.amazonaws.services.ec2.model.DescribeSubnetsResult;
 import com.amazonaws.services.ec2.model.DescribeVolumeStatusRequest;
@@ -891,7 +899,71 @@ public final class Ec2Api {
         return Ec2Caller.get(DescribeNatGatewaysRequest.class, NatGatewaysResponse.class, credentials, region).execute((client, request, response) -> {
             final DescribeNatGatewaysResult result = client.describeNatGateways(request.withNextToken(page));
             response.setNatGateways(result.getNatGateways());
-            response.setNextPage(page);
+            response.setNextPage(result.getNextToken());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "spotInstanceRequests.list",
+            path = "{region}/spot-instance-requests"
+    )
+    public SpotInstanceRequestsResponse spotInstanceRequestsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeSpotInstanceRequestsRequest.class, SpotInstanceRequestsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeSpotInstanceRequestsResult result = client.describeSpotInstanceRequests();
+            response.setSpotInstanceResponses(result.getSpotInstanceRequests());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "spotDatafeedSubscription.get",
+            path = "{region}/spot-datafeed-subscription"
+    )
+    public SpotDatafeedSubscriptionResponse spotDatafeedSubscription(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeSpotDatafeedSubscriptionRequest.class, SpotDatafeedSubscriptionResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeSpotDatafeedSubscriptionResult result = client.describeSpotDatafeedSubscription();
+            response.setSpotDatafeedSubscription(result.getSpotDatafeedSubscription());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "spotFleetInstances.list",
+            path = "{region}/spot-fleet-instances"
+    )
+    public SpotFleetInstancesResponse spotFleetInstancesList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeSpotFleetInstancesRequest.class, SpotFleetInstancesResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeSpotFleetInstancesResult result = client.describeSpotFleetInstances(request.withNextToken(page));
+            response.setActiveInstances(result.getActiveInstances());
+            response.setNextPage(result.getNextToken());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "spotFleetRequests.list",
+            path = "{region}/spot-fleet-requests"
+    )
+    public SpotFleetRequestsResponse spotFleetRequestsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeSpotFleetRequestsRequest.class, SpotFleetRequestsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeSpotFleetRequestsResult result = client.describeSpotFleetRequests(request.withNextToken(page));
+            response.setSpotFleetRequestConfigs(result.getSpotFleetRequestConfigs());
+            response.setNextPage(result.getNextToken());
         });
     }
 }
