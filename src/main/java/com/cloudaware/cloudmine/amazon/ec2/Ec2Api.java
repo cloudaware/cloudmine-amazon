@@ -50,6 +50,8 @@ import com.amazonaws.services.ec2.model.DescribeSnapshotAttributeRequest;
 import com.amazonaws.services.ec2.model.DescribeSnapshotAttributeResult;
 import com.amazonaws.services.ec2.model.DescribeSnapshotsRequest;
 import com.amazonaws.services.ec2.model.DescribeSnapshotsResult;
+import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsRequest;
+import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsResult;
 import com.amazonaws.services.ec2.model.DescribeSubnetsRequest;
 import com.amazonaws.services.ec2.model.DescribeSubnetsResult;
 import com.amazonaws.services.ec2.model.DescribeVolumeStatusRequest;
@@ -892,6 +894,21 @@ public final class Ec2Api {
             final DescribeNatGatewaysResult result = client.describeNatGateways(request.withNextToken(page));
             response.setNatGateways(result.getNatGateways());
             response.setNextPage(page);
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "spotInstanceRequests.list",
+            path = "{region}/spot-instance-requests"
+    )
+    public SpotInstanceRequestsResponse spotInstanceRequestsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(DescribeSpotInstanceRequestsRequest.class, SpotInstanceRequestsResponse.class, credentials, region).execute((client, request, response) -> {
+            final DescribeSpotInstanceRequestsResult result = client.describeSpotInstanceRequests();
+            response.setSpotInstanceResponses(result.getSpotInstanceRequests());
         });
     }
 }
