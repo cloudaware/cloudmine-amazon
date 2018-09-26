@@ -28,6 +28,8 @@ import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
 import com.amazonaws.services.cloudfront.AmazonCloudFront;
 import com.amazonaws.services.cloudfront.AmazonCloudFrontClient;
+import com.amazonaws.services.cloudhsmv2.AWSCloudHSMV2;
+import com.amazonaws.services.cloudhsmv2.AWSCloudHSMV2Client;
 import com.amazonaws.services.cloudsearchv2.AmazonCloudSearch;
 import com.amazonaws.services.cloudsearchv2.AmazonCloudSearchClient;
 import com.amazonaws.services.cloudtrail.AWSCloudTrail;
@@ -1023,6 +1025,15 @@ public final class AmazonClientHelper {
 
     public ClientWrapper<AmazonAppStream> getAmazonAppStream(final String region) {
         final AmazonAppStream client = AmazonAppStreamClient.builder()
+                .withClientConfiguration(config)
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withRegion(region)
+                .build();
+        return new ClientWrapper<>(client);
+    }
+
+    public ClientWrapper<AWSCloudHSMV2> getAwsCloudHsmv2(final String region) {
+        final AWSCloudHSMV2 client = AWSCloudHSMV2Client.builder()
                 .withClientConfiguration(config)
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion(region)
