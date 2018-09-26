@@ -7,7 +7,7 @@
 
     <groupId>com.cloudaware.cloudmine</groupId>
     <artifactId>cloudmine-amazon-server</artifactId>
-    <version>1.0.66</version>
+    <version>1.0.67</version>
     <name>cloudmine-amazon-server</name>
 
     <properties>
@@ -27,6 +27,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-cloudhsmv2</artifactId>
+            <version>${aws-java-sdk.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-autoscaling</artifactId>
@@ -573,6 +578,7 @@
                         <param>com.cloudaware.cloudmine.amazon.applicationautoscaling.ApplicationAutoScalingApi</param>
                         <param>com.cloudaware.cloudmine.amazon.autoscalingplans.AutoScalingPlansApi</param>
                         <param>com.cloudaware.cloudmine.amazon.appstream.AppStreamApi</param>
+                        <param>com.cloudaware.cloudmine.amazon.cloudhsmv2.CloudHsmv2Api</param>
                     </apis>
                 </configuration>
                 <executions>
