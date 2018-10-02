@@ -3,15 +3,36 @@ package com.cloudaware.cloudmine.amazon.s3;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.BucketCrossOriginConfiguration;
+import com.amazonaws.services.s3.model.BucketNotificationConfiguration;
 import com.amazonaws.services.s3.model.BucketPolicy;
+import com.amazonaws.services.s3.model.BucketReplicationConfiguration;
 import com.amazonaws.services.s3.model.BucketTaggingConfiguration;
 import com.amazonaws.services.s3.model.GetBucketAccelerateConfigurationRequest;
 import com.amazonaws.services.s3.model.GetBucketAclRequest;
 import com.amazonaws.services.s3.model.GetBucketVersioningConfigurationRequest;
+import com.amazonaws.services.s3.model.GetObjectAclRequest;
+import com.amazonaws.services.s3.model.GetObjectTaggingRequest;
+import com.amazonaws.services.s3.model.GetObjectTaggingResult;
 import com.amazonaws.services.s3.model.GroupGrantee;
+import com.amazonaws.services.s3.model.ListBucketAnalyticsConfigurationsRequest;
+import com.amazonaws.services.s3.model.ListBucketAnalyticsConfigurationsResult;
+import com.amazonaws.services.s3.model.ListBucketInventoryConfigurationsRequest;
+import com.amazonaws.services.s3.model.ListBucketInventoryConfigurationsResult;
+import com.amazonaws.services.s3.model.ListBucketMetricsConfigurationsRequest;
+import com.amazonaws.services.s3.model.ListBucketMetricsConfigurationsResult;
+import com.amazonaws.services.s3.model.ListMultipartUploadsRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ListPartsRequest;
+import com.amazonaws.services.s3.model.ListVersionsRequest;
+import com.amazonaws.services.s3.model.MultipartUploadListing;
+import com.amazonaws.services.s3.model.ObjectTagging;
+import com.amazonaws.services.s3.model.PartListing;
 import com.amazonaws.services.s3.model.SetBucketTaggingConfigurationRequest;
+import com.amazonaws.services.s3.model.SetObjectTaggingRequest;
+import com.amazonaws.services.s3.model.Tag;
 import com.amazonaws.services.s3.model.TagSet;
+import com.amazonaws.services.s3.model.VersionListing;
 import com.cloudaware.cloudmine.amazon.AmazonClientHelper;
 import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
@@ -24,8 +45,10 @@ import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * User: urmuzov
@@ -156,18 +179,7 @@ public final class S3Api {
             aclParseable.setRequesterCharged(acl.isRequesterCharged());
             aclParseable.setGrants(Lists.newArrayList());
             if (acl.getGrantsAsList() != null) {
-                for (final com.amazonaws.services.s3.model.Grant grant : acl.getGrantsAsList()) {
-                    if (grant.getGrantee() instanceof GroupGrantee) {
-                        final GroupGrantee originalGrantee = (GroupGrantee) grant.getGrantee();
-                        final com.cloudaware.cloudmine.amazon.s3.GroupGrantee grantee = new com.cloudaware.cloudmine.amazon.s3.GroupGrantee();
-                        grantee.setGroupName(originalGrantee.name());
-                        grantee.setIdentifier(originalGrantee.getIdentifier());
-                        final com.amazonaws.services.s3.model.Grant awsGrant = new com.amazonaws.services.s3.model.Grant(grantee, grant.getPermission());
-                        aclParseable.getGrants().add(new Grant(awsGrant));
-                    } else {
-                        aclParseable.getGrants().add(new Grant(grant));
-                    }
-                }
+                processGrants(acl, aclParseable);
             }
 
             return new AclResponse(aclParseable);
@@ -330,6 +342,351 @@ public final class S3Api {
             return new LifecycleConfigurationResponse();
         } catch (Throwable t) {
             return new LifecycleConfigurationResponse(AmazonResponse.parse(t, "s3:GetLifecycleConfiguration"));
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "buckets.analyticsConfiguration.list",
+            path = "{region}/bucket/analytics-configuration"
+    )
+    public AnalyticsConfigurationsResponse analyticsConfigurationsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            final ListBucketAnalyticsConfigurationsResult result = clientWrapper.getClient().listBucketAnalyticsConfigurations(
+                    new ListBucketAnalyticsConfigurationsRequest()
+                            .withContinuationToken(page)
+            );
+            if (result != null) {
+                return new AnalyticsConfigurationsResponse(result.getAnalyticsConfigurationList(), result.getNextContinuationToken());
+            }
+            return new AnalyticsConfigurationsResponse(null, null);
+        } catch (Throwable t) {
+            return new AnalyticsConfigurationsResponse(AmazonResponse.parse(t, "s3:ListAnalyticsConfigurations"));
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "buckets.crossOriginConfiguration.get",
+            path = "{region}/bucket/{bucketName}/cross-origin-configuration"
+    )
+    public CrossOriginConfigurationResponse crossOriginConfigurationGet(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("bucketName") final String bucketName
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            final BucketCrossOriginConfiguration crossOriginConfiguration = clientWrapper.getClient().getBucketCrossOriginConfiguration(bucketName);
+            if (crossOriginConfiguration != null) {
+                return new CrossOriginConfigurationResponse(
+                        crossOriginConfiguration.getRules().stream().map(rule -> {
+                            final CorsRule corsRule = new CorsRule();
+                            corsRule.setAllowedHeaders(rule.getAllowedHeaders());
+                            corsRule.setAllowedMethods(rule.getAllowedMethods());
+                            corsRule.setAllowedOrigins(rule.getAllowedOrigins());
+                            corsRule.setExposedHeaders(rule.getExposedHeaders());
+                            corsRule.setId(rule.getId());
+                            corsRule.setMaxAgeSeconds(rule.getMaxAgeSeconds());
+                            return corsRule;
+                        }).collect(Collectors.toList())
+                );
+            }
+            return new CrossOriginConfigurationResponse(Lists.newArrayList());
+        } catch (Throwable t) {
+            return new CrossOriginConfigurationResponse(AmazonResponse.parse(t, "s3:GetCrossOriginConfiguration"));
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "buckets.inventoryConfiguration.list",
+            path = "{region}/bucket/inventory-configuration"
+    )
+    public InventoryConfigurationsResponse inventoryConfigurationsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("bucketName") @Nullable final String bucketName,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            final ListBucketInventoryConfigurationsResult result = clientWrapper.getClient().listBucketInventoryConfigurations(
+                    new ListBucketInventoryConfigurationsRequest()
+                            .withBucketName(bucketName)
+                            .withContinuationToken(page)
+            );
+            if (result != null) {
+                return new InventoryConfigurationsResponse(result.getInventoryConfigurationList(), result.getNextContinuationToken());
+            }
+            return new InventoryConfigurationsResponse(null, null);
+        } catch (Throwable t) {
+            return new InventoryConfigurationsResponse(AmazonResponse.parse(t, "s3:ListInventoryConfigurations"));
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "buckets.metricsConfiguration.list",
+            path = "{region}/bucket/metrics-configuration"
+    )
+    public MetricsConfigurationsResponse metricsConfigurationsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("bucketName") @Nullable final String bucketName,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            final ListBucketMetricsConfigurationsResult result = clientWrapper.getClient().listBucketMetricsConfigurations(
+                    new ListBucketMetricsConfigurationsRequest()
+                            .withBucketName(bucketName)
+                            .withContinuationToken(page)
+            );
+            if (result != null) {
+                return new MetricsConfigurationsResponse(result.getMetricsConfigurationList(), result.getNextContinuationToken());
+            }
+            return new MetricsConfigurationsResponse(null, null);
+        } catch (Throwable t) {
+            return new MetricsConfigurationsResponse(AmazonResponse.parse(t, "s3:ListMetricsConfigurations"));
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "buckets.multipartUploads.list",
+            path = "{region}/bucket/multipart-uploads"
+    )
+    public MultipartUploadsResponse multipartUploadsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("bucketName") final String bucketName,
+            @Named("prefix") @Nullable final String prefix,
+            @Named("delimiter") @Nullable final String delimiter,
+            @Named("pageSize") @Nullable final Integer pageSize,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            final MultipartUploadListing result = clientWrapper.getClient().listMultipartUploads(
+                    new ListMultipartUploadsRequest(bucketName)
+                            .withKeyMarker(page)
+                            .withBucketName(bucketName)
+                            .withDelimiter(delimiter)
+                            .withMaxUploads(pageSize)
+                            .withPrefix(prefix)
+            );
+            if (result != null) {
+                return new MultipartUploadsResponse(result.getMultipartUploads(), result.getNextKeyMarker());
+            }
+            return new MultipartUploadsResponse(null, null);
+        } catch (Throwable t) {
+            return new MultipartUploadsResponse(AmazonResponse.parse(t, "s3:ListMultipartUploads"));
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "buckets.notificationConfiguration.get",
+            path = "{region}/bucket/{bucketName}/notification-configuration"
+    )
+    public NotificationConfigurationResponse notificationConfigurationGet(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("bucketName") final String bucketName
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            final BucketNotificationConfiguration result = clientWrapper.getClient().getBucketNotificationConfiguration(bucketName);
+            if (result != null) {
+                return new NotificationConfigurationResponse(result.getConfigurations());
+            }
+            return new NotificationConfigurationResponse(Maps.newHashMap());
+        } catch (Throwable t) {
+            return new NotificationConfigurationResponse(AmazonResponse.parse(t, "s3:GetNotificationConfiguration"));
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "buckets.objectVersions.list",
+            path = "{region}/bucket/object-versions"
+    )
+    public ObjectVersionsResponse objectVersionsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("bucketName") @Nullable final String bucketName,
+            @Named("prefix") @Nullable final String prefix,
+            @Named("delimiter") @Nullable final String delimiter,
+            @Named("pageSize") @Nullable final Integer pageSize,
+            @Named("page") @Nullable final String page
+
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            final VersionListing result = clientWrapper.getClient().listVersions(
+                    new ListVersionsRequest()
+                            .withBucketName(bucketName)
+                            .withDelimiter(delimiter)
+                            .withKeyMarker(page)
+                            .withMaxResults(pageSize)
+                            .withPrefix(prefix)
+            );
+            if (result != null) {
+                return new ObjectVersionsResponse(result.getVersionSummaries(), result.getNextKeyMarker());
+            }
+            return new ObjectVersionsResponse(null, null);
+        } catch (Throwable t) {
+            return new ObjectVersionsResponse(AmazonResponse.parse(t, "s3:ListObjectVersions"));
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "buckets.replicationConfiguration.get",
+            path = "{region}/bucket/{bucketName}/replication-configuration"
+    )
+    public ReplicationConfigurationResponse replicationConfigurationGet(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("bucketName") final String bucketName
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            final BucketReplicationConfiguration result = clientWrapper.getClient().getBucketReplicationConfiguration(bucketName);
+            if (result != null) {
+                return new ReplicationConfigurationResponse(result.getRules(), result.getRoleARN());
+            }
+            return new ReplicationConfigurationResponse(null, null);
+        } catch (Throwable t) {
+            return new ReplicationConfigurationResponse(AmazonResponse.parse(t, "s3:GetReplicationConfiguration"));
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "buckets.objects.parts.list",
+            path = "{region}/bucket/{bucketName}/objects/{key}/parts"
+    )
+    public PartsResponse partsList(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("bucketName") final String bucketName,
+            @Named("key") final String key,
+            @Named("uploadId") final String uploadId,
+            @Named("page") @Nullable final String page,
+            @Named("pageSize") @Nullable final Integer pageSize
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            final PartListing result = clientWrapper.getClient().listParts(
+                    new ListPartsRequest(bucketName, key, uploadId).withMaxParts(pageSize).withPartNumberMarker(Integer.parseInt(page))
+            );
+            if (result != null) {
+                return new PartsResponse(result, result.getNextPartNumberMarker().toString());
+            }
+            return new PartsResponse(null, null);
+        } catch (Throwable t) {
+            return new PartsResponse(AmazonResponse.parse(t, "s3:ListParts"));
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "buckets.objects.acl.get",
+            path = "{region}/bucket/{bucketName}/objects/{key}/acl"
+    )
+    public AclResponse objectAclGet(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("bucketName") final String bucketName,
+            @Named("key") final String key,
+            @Named("versionId") @Nullable final String versionId
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            final AccessControlList acl = clientWrapper.getClient()
+                    .getObjectAcl(new GetObjectAclRequest(bucketName, key, versionId));
+            final AccessControlListParsableByGoogleParser aclParseable = new AccessControlListParsableByGoogleParser();
+            aclParseable.setRequesterCharged(acl.isRequesterCharged());
+            aclParseable.setGrants(Lists.newArrayList());
+
+            if (acl.getGrantsAsList() == null) {
+                return new AclResponse(aclParseable);
+            }
+
+            processGrants(acl, aclParseable);
+
+            return new AclResponse(aclParseable);
+        } catch (Throwable t) {
+            return new AclResponse(AmazonResponse.parse(t, "s3:GetObjectAcl"));
+        }
+    }
+
+    private void processGrants(final AccessControlList acl, final AccessControlListParsableByGoogleParser aclParseable) {
+        for (final com.amazonaws.services.s3.model.Grant grant : acl.getGrantsAsList()) {
+            if (grant.getGrantee() instanceof GroupGrantee) {
+                final GroupGrantee originalGrantee = (GroupGrantee) grant.getGrantee();
+                final com.cloudaware.cloudmine.amazon.s3.GroupGrantee grantee = new com.cloudaware.cloudmine.amazon.s3.GroupGrantee();
+                grantee.setGroupName(originalGrantee.name());
+                grantee.setIdentifier(originalGrantee.getIdentifier());
+                final com.amazonaws.services.s3.model.Grant awsGrant = new com.amazonaws.services.s3.model.Grant(grantee, grant.getPermission());
+                aclParseable.getGrants().add(new Grant(awsGrant));
+            } else {
+                aclParseable.getGrants().add(new Grant(grant));
+            }
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "buckets.objects.tags.get",
+            path = "{region}/bucket/{bucketName}/objects/{key}/tags"
+    )
+    public ObjectTagsResponse objectTagsGet(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("bucketName") final String bucketName,
+            @Named("key") final String key,
+            @Named("versionId") @Nullable final String versionId
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            final GetObjectTaggingResult result = clientWrapper.getClient().getObjectTagging(
+                    new GetObjectTaggingRequest(bucketName, key, versionId)
+            );
+            return new ObjectTagsResponse(result == null ? null : result.getTagSet());
+        } catch (Throwable t) {
+            return new ObjectTagsResponse(AmazonResponse.parse(t, "s3:GetObjectTagging"));
+        }
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "buckets.objects.tags.set",
+            path = "{region}/bucket/{bucketName}/objects/{key}/tags"
+    )
+    public AmazonResponse objectTagsSet(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region,
+            @Named("bucketName") final String bucketName,
+            @Named("key") final String key,
+            @Named("versionId") @Nullable final String versionId,
+            final TagsRequest tagsRequest
+    ) throws AmazonUnparsedException {
+        try (ClientWrapper<AmazonS3> clientWrapper = new AmazonClientHelper(credentials).getS3(region)) {
+            if (tagsRequest.getTags() == null || tagsRequest.getTags().size() == 0) {
+                return new AmazonResponse();
+            }
+            clientWrapper.getClient().setObjectTagging(
+                    new SetObjectTaggingRequest(
+                            bucketName,
+                            key,
+                            versionId,
+                            new ObjectTagging(
+                                    tagsRequest.getTags().entrySet().stream()
+                                            .map(entry -> new Tag(entry.getKey(), entry.getValue()))
+                                            .collect(Collectors.toList())
+                            )
+                    )
+            );
+            return new AmazonResponse();
+        } catch (Throwable t) {
+            return new AmazonResponse(AmazonResponse.parse(t, "s3:SetObjectTagging"));
         }
     }
 }

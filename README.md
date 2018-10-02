@@ -276,6 +276,7 @@ To build client library:
 
 # Changelog
 
+* 1.0.68 - S3 lacking methods added
 * 1.0.67 - CloudHSM added
 * 1.0.66 - EC2 Spot added, NAT Gateways page fix
 * 1.0.65 - Kinesis ignore invalid dates
