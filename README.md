@@ -276,6 +276,7 @@ To build client library:
 
 # Changelog
 
+* 1.0.69 - S3 lacking methods added
 * 1.0.68 - IAM, added account aliases List
 * 1.0.67 - CloudHSM added
 * 1.0.66 - EC2 Spot added, NAT Gateways page fix
