@@ -666,27 +666,6 @@ public final class IamApi {
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
-            name = "mfaDevices.list",
-            path = "{partition}/mfa-devices"
-    )
-    public MfaDevicesResponse mfaDevicesList(
-            @Named("credentials") final String credentials,
-            @Named("partition") final String partition,
-            @Named("page") @Nullable final String page
-    ) throws AmazonUnparsedException {
-        return IamCaller.get(ListMFADevicesRequest.class, MfaDevicesResponse.class, credentials, partition).execute((client, request, response) -> {
-            final ListMFADevicesResult result = client.listMFADevices(
-                    request
-                            .withMarker(page)
-                            .withMaxItems(MAX_ITEMS)
-            );
-            response.setMfaDevices(result.getMFADevices());
-            response.setNextPage(result.getMarker());
-        });
-    }
-
-    @ApiMethod(
-            httpMethod = ApiMethod.HttpMethod.GET,
             name = "virtualMfaDevices.list",
             path = "{partition}/virtual-mfa-devices"
     )
