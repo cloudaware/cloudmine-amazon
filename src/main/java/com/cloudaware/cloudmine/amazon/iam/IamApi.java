@@ -51,6 +51,8 @@ import com.amazonaws.services.identitymanagement.model.ListPolicyVersionsRequest
 import com.amazonaws.services.identitymanagement.model.ListPolicyVersionsResult;
 import com.amazonaws.services.identitymanagement.model.ListRolePoliciesRequest;
 import com.amazonaws.services.identitymanagement.model.ListRolePoliciesResult;
+import com.amazonaws.services.identitymanagement.model.ListRoleTagsRequest;
+import com.amazonaws.services.identitymanagement.model.ListRoleTagsResult;
 import com.amazonaws.services.identitymanagement.model.ListRolesRequest;
 import com.amazonaws.services.identitymanagement.model.ListRolesResult;
 import com.amazonaws.services.identitymanagement.model.ListSAMLProvidersRequest;
@@ -63,6 +65,8 @@ import com.amazonaws.services.identitymanagement.model.ListSigningCertificatesRe
 import com.amazonaws.services.identitymanagement.model.ListSigningCertificatesResult;
 import com.amazonaws.services.identitymanagement.model.ListUserPoliciesRequest;
 import com.amazonaws.services.identitymanagement.model.ListUserPoliciesResult;
+import com.amazonaws.services.identitymanagement.model.ListUserTagsRequest;
+import com.amazonaws.services.identitymanagement.model.ListUserTagsResult;
 import com.amazonaws.services.identitymanagement.model.ListUsersRequest;
 import com.amazonaws.services.identitymanagement.model.ListUsersResult;
 import com.amazonaws.services.identitymanagement.model.ListVirtualMFADevicesRequest;
@@ -209,6 +213,24 @@ public final class IamApi {
         return IamCaller.get(ListAccessKeysRequest.class, AccessKeysResponse.class, credentials, partition).execute((client, request, response) -> {
             final ListAccessKeysResult result = client.listAccessKeys(request.withUserName(userName).withMarker(page));
             response.setAccessKeys(result.getAccessKeyMetadata());
+            response.setNextPage(result.getMarker());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "users.tags.list",
+            path = "{partition}/users/{userName}/tags"
+    )
+    public TagsResponse usersTagsList(
+            @Named("credentials") final String credentials,
+            @Named("partition") final String partition,
+            @Named("userName") final String userName,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return IamCaller.get(ListUserTagsRequest.class, TagsResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListUserTagsResult result = client.listUserTags(request.withUserName(userName).withMarker(page));
+            response.setTags(result.getTags());
             response.setNextPage(result.getMarker());
         });
     }
@@ -572,6 +594,28 @@ public final class IamApi {
                             .withMarker(page)
             );
             response.setAttachedPolicies(result.getAttachedPolicies());
+            response.setNextPage(result.getMarker());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "roles.tags.list",
+            path = "{partition}/roles/{roleName}/tags"
+    )
+    public TagsResponse rolesTagsList(
+            @Named("credentials") final String credentials,
+            @Named("partition") final String partition,
+            @Named("roleName") final String roleName,
+            @Named("page") @Nullable final String page
+    ) throws AmazonUnparsedException {
+        return IamCaller.get(ListRoleTagsRequest.class, TagsResponse.class, credentials, partition).execute((client, request, response) -> {
+            final ListRoleTagsResult result = client.listRoleTags(
+                    request
+                            .withRoleName(roleName)
+                            .withMarker(page)
+            );
+            response.setTags(result.getTags());
             response.setNextPage(result.getMarker());
         });
     }
