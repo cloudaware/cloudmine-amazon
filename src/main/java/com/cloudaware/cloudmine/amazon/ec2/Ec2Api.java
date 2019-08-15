@@ -94,6 +94,8 @@ import com.amazonaws.services.ec2.model.DescribeVpnConnectionsRequest;
 import com.amazonaws.services.ec2.model.DescribeVpnConnectionsResult;
 import com.amazonaws.services.ec2.model.DescribeVpnGatewaysRequest;
 import com.amazonaws.services.ec2.model.DescribeVpnGatewaysResult;
+import com.amazonaws.services.ec2.model.GetEbsEncryptionByDefaultRequest;
+import com.amazonaws.services.ec2.model.GetEbsEncryptionByDefaultResult;
 import com.amazonaws.services.ec2.model.RebootInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
@@ -1021,6 +1023,21 @@ public final class Ec2Api {
         return Ec2Caller.get(DescribeRegionsRequest.class, RegionsResponse.class, credentials, region).execute((client, request, response) -> {
             final DescribeRegionsResult result = client.describeRegions(request.withAllRegions(true));
             response.setRegions(result.getRegions());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "ebsEncryptionByDefault.get",
+            path = "{region}/ebs-encryption-by-default"
+    )
+    public GetEbsEncryptionByDefaultResponse ebsEncryptionByDefaultGet(
+            @Named("credentials") final String credentials,
+            @Named("region") final String region
+    ) throws AmazonUnparsedException {
+        return Ec2Caller.get(GetEbsEncryptionByDefaultRequest.class, GetEbsEncryptionByDefaultResponse.class, credentials, region).execute((client, request, response) -> {
+            final GetEbsEncryptionByDefaultResult result = client.getEbsEncryptionByDefault(request);
+            response.setEbsEncryptionByDefault(result.getEbsEncryptionByDefault());
         });
     }
 }
