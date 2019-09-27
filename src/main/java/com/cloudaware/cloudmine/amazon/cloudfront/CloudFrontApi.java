@@ -22,6 +22,13 @@ import com.amazonaws.services.cloudfront.model.ListPublicKeysRequest;
 import com.amazonaws.services.cloudfront.model.ListPublicKeysResult;
 import com.amazonaws.services.cloudfront.model.ListStreamingDistributionsRequest;
 import com.amazonaws.services.cloudfront.model.ListStreamingDistributionsResult;
+import com.amazonaws.services.cloudfront.model.ListTagsForResourceRequest;
+import com.amazonaws.services.cloudfront.model.ListTagsForResourceResult;
+import com.amazonaws.services.cloudfront.model.TagKeys;
+import com.amazonaws.services.cloudfront.model.TagResourceRequest;
+import com.amazonaws.services.cloudfront.model.Tags;
+import com.amazonaws.services.cloudfront.model.UntagResourceRequest;
+import com.cloudaware.cloudmine.amazon.AmazonResponse;
 import com.cloudaware.cloudmine.amazon.AmazonUnparsedException;
 import com.cloudaware.cloudmine.amazon.Constants;
 import com.google.api.server.spi.config.AnnotationBoolean;
@@ -30,6 +37,8 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.Nullable;
+
+import java.util.List;
 
 /**
  * User: urmuzov
@@ -241,4 +250,49 @@ public final class CloudFrontApi {
         });
     }
 
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.GET,
+            name = "tags.list",
+            path = "tags"
+    )
+    public TagsResponse tagsList(
+            @Named("credentials") final String credentials,
+            @Named("resourceArn") final String resourceArn
+    ) throws AmazonUnparsedException {
+        return CloudFrontCaller.get(ListTagsForResourceRequest.class, TagsResponse.class, credentials).execute((client, request, response) -> {
+            final ListTagsForResourceResult result = client.listTagsForResource(
+                    request.withResource(resourceArn));
+            response.setTags(result.getTags().getItems());
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.POST,
+            name = "tags.tag",
+            path = "tags/tag"
+    )
+    public AmazonResponse tagsAdd(
+            @Named("credentials") final String credentials,
+            @Named("resourceArn") final String resourceArn,
+            final TagsRequest request
+    ) throws AmazonUnparsedException {
+        return CloudFrontCaller.get(TagResourceRequest.class, AmazonResponse.class, credentials).execute((client, tagResourceRequest, response) -> {
+            client.tagResource(tagResourceRequest.withResource(resourceArn).withTags(new Tags().withItems(request.getTags())));
+        });
+    }
+
+    @ApiMethod(
+            httpMethod = ApiMethod.HttpMethod.DELETE,
+            name = "tags.untag",
+            path = "tags/untag"
+    )
+    public AmazonResponse tagsRemove(
+            @Named("credentials") final String credentials,
+            @Named("resourceArn") final String resourceArn,
+            @Named("tagKey") final List<String> tagKeys
+    ) throws AmazonUnparsedException {
+        return CloudFrontCaller.get(UntagResourceRequest.class, AmazonResponse.class, credentials).execute((client, request, response) -> {
+            client.untagResource(request.withResource(resourceArn).withTagKeys(new TagKeys().withItems(tagKeys)));
+        });
+    }
 }
