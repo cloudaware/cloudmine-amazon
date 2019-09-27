@@ -276,6 +276,7 @@ To build client library:
 
 # Changelog
 
+* 1.0.78 - CloudFront Tags added
 * 1.0.77 - IAM, User Tags and Role Tags added
 * 1.0.76 - x-google-allow for ESP
 * 1.0.75 - CodeDeploy deploymentTarget endpoints added
