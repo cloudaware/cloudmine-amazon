@@ -209,6 +209,10 @@ public class AmazonResponse<T extends AmazonWebServiceResult> {
             }
             LOGGER.error("Unable to categorize AmazonClientException.", t);
             return new AmazonException(AmazonException.Category.UNKNOWN, action, t.getClass().getName(), t.getMessage());
+        } else if (t instanceof IllegalArgumentException) {
+            if (t.getMessage() != null && t.getMessage().contains("Unsupported AWS Region")) {
+                return new AmazonException(AmazonException.Category.SERVICE_DISABLED, action, t.getClass().getName(), t.getMessage());
+            }
         }
         LOGGER.error("Unable to categorize exception.", t);
         throw new AmazonUnparsedException(t);
