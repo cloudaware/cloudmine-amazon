@@ -14,7 +14,8 @@ public class WarContextListener extends com.google.inject.servlet.GuiceServletCo
                         super.configureServlets();
                         filterRegex("/_ah/api/(?!explorer)(?!static)(?!discovery).*").through(AuthFilter.class);
                     }
-                }
+                },
+                new HealthCheckModule()
         );
     }
 }
