@@ -19,8 +19,8 @@ automatic_scaling:
     target_utilization: 0.5
 
 resources:
-  cpu: 1
-  memory_gb: 3
+  cpu: 2
+  memory_gb: 6
 
 liveness_check:
   path: "/liveness_check"
