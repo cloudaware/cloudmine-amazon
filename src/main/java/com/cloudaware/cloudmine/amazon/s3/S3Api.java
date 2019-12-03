@@ -71,6 +71,7 @@ import java.util.stream.Collectors;
         apiKeyRequired = AnnotationBoolean.TRUE
 )
 public final class S3Api {
+    private static final int LIST_OBJECTS_TIMEOUT = 2 * 60 * 1000;
 
     @ApiMethod(
             httpMethod = ApiMethod.HttpMethod.GET,
@@ -269,6 +270,8 @@ public final class S3Api {
                             .withDelimiter(delimiter)
                             .withMarker(page)
                             .withMaxKeys(pageSize)
+                            .withSdkRequestTimeout(LIST_OBJECTS_TIMEOUT)
+                            .withSdkClientExecutionTimeout(LIST_OBJECTS_TIMEOUT)
             );
             return new ObjectsResponse(objectListing, objectListing.getNextMarker());
         } catch (Throwable t) {
