@@ -23,7 +23,7 @@
         <endpoints-management.version>1.0.2</endpoints-management.version>
         <guice.version>4.0</guice.version>
         <guava.version>21.0</guava.version>
-        <jackson.version>2.7.5</jackson.version>
+        <jackson.version>2.9.10.8</jackson.version>
         <slf4j.version>1.7.13</slf4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <aws.apiKey>yourkey</aws.apiKey>
